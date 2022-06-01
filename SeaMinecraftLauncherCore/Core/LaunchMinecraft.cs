@@ -13,7 +13,7 @@ namespace SeaMinecraftLauncherCore.Core
 {
     public static class LaunchMinecraft
     {
-        public static string GenerateStartScript(VanillaVersionInfo versionInfo)
+        public static string GenerateStartScript(VanillaVersionInfo versionInfo, GameArguments gameArguments)
         {
             var jvmScript = new StringBuilder();
 
@@ -85,6 +85,7 @@ namespace SeaMinecraftLauncherCore.Core
                     gameScript.Append(' ');
                 }
             }
+            gameScript.Replace("", "");
 
             return jvmScript.ToString() + gameScript.ToString().Trim(' ');
         }
@@ -137,5 +138,7 @@ namespace SeaMinecraftLauncherCore.Core
             G1GC,
             ZGC
         }
+
+        public GameArguments() { }
     }
 }
