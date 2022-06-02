@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace SeaMinecraftLauncherCore.Tools
@@ -42,6 +43,38 @@ namespace SeaMinecraftLauncherCore.Tools
                     }
                 }
 
+                string[] javaPaths = { "Program Files\\Java", "Program Files (x86)\\Java", "MCLDownload\\ext" };
+                foreach (var disk in Directory.GetLogicalDrives())
+                {
+                    foreach (string javaPath in javaPaths)
+                    {
+                        try
+                        {
+                            DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(disk, javaPath));
+                            FileInfo[] fileInfos = directoryInfo.GetFiles("java.exe", SearchOption.AllDirectories);
+                            foreach (FileInfo fileInfo in fileInfos)
+                            {
+                                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
+                                JavaInfo javaInfo = new JavaInfo(fileVersionInfo.ProductName, fileInfo.FullName);
+                                foreach (var java in javaList)
+                                {
+                                    if (java == javaInfo)
+                                    {
+                                        goto SkipJava;
+                                    }
+                                }
+                                javaList.Add(javaInfo);
+                            SkipJava:
+                                continue;
+                            }
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                }
+
                 return javaList.ToArray();
             }
             catch
@@ -60,6 +93,23 @@ namespace SeaMinecraftLauncherCore.Tools
         {
             JavaVersion = Version.Parse(version);
             JavaPath = javaHome;
+        }
+
+        public override bool Equals(object obj)
+        {
+            JavaInfo javaInfo = obj as JavaInfo;
+            return this == javaInfo;
+        }
+
+        public static bool operator ==(JavaInfo java1, JavaInfo java2)
+        {
+            return java1.JavaVersion == java2.JavaVersion
+                && java1.JavaPath == java2.JavaPath;
+        }
+
+        public static bool operator !=(JavaInfo java1, JavaInfo java2)
+        {
+            return !(java1 == java2);
         }
     }
 }
