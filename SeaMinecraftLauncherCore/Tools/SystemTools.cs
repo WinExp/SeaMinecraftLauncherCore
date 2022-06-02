@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualBasic.Devices;
 using System;
-using System.Diagnostics;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
@@ -11,7 +10,7 @@ namespace SeaMinecraftLauncherCore.Tools
             ComputerInfo computerInfo = new ComputerInfo();
             return computerInfo.TotalPhysicalMemory;
         }
-        
+
         public static double GetSystemMemoryOccupancy()
         {
             ComputerInfo computerInfo = new ComputerInfo();

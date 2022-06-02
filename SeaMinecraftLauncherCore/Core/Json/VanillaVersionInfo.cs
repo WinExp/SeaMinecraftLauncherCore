@@ -1,9 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Core.Json
 {
@@ -26,7 +22,6 @@ namespace SeaMinecraftLauncherCore.Core.Json
                 "-Dfml.ignorePatchDiscrepancies=True",
                 "-Dlog4j2.formatMsgNoLookups=true",
                 "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
-                "-Xss1M",
                 "-Djava.library.path=${natives_directory}",
                 "-Dminecraft.launcher.brand=${launcher_name}",
                 "-Dminecraft.launcher.version=${launcher_version}",

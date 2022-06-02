@@ -5,17 +5,16 @@ using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Core
 {
     public static class LaunchMinecraft
     {
-        public static string GenerateStartScript(VanillaVersionInfo versionInfo, GameArguments gameArguments)
+        public static string GenerateStartScript(VanillaVersionInfo versionInfo, GameArguments gameArguments, JavaInfo javaInfo)
         {
-            var jvmScript = new StringBuilder();
+            var jvmScript = new StringBuilder($"\"{javaInfo.JavaPath}\" -XX:+Use{gameArguments.GC} ");
+            var minecraftRootPath = PathExtension.GetMinecraftRootPath(versionInfo.VersionPath);
 
             foreach (string jvmArg in versionInfo.Arguments.JvmArgs)
             {
@@ -59,7 +58,7 @@ namespace SeaMinecraftLauncherCore.Core
                         }
                     }
                 }
-                classpath.Append(Path.Combine(PathExtension.GetMinecraftRootPath(versionInfo.VersionPath), library.Download.Artifact.Path.Replace('/', '\\')));
+                classpath.Append(Path.Combine(minecraftRootPath, "libraries", library.Download.Artifact.Path.Replace('/', '\\')));
                 classpath.Append(';');
             SkipLibrary:
                 continue;
@@ -68,7 +67,7 @@ namespace SeaMinecraftLauncherCore.Core
             classpath.Append('\"');
             jvmScript.Replace("${classpath}", classpath.ToString());
             jvmScript.Append(versionInfo.MainClass);
-            jvmScript.Append(' ');
+            jvmScript.Append($" -Xmn256m -Xmx{gameArguments.MaxMemory}m ");
 
 
             var gameScript = new StringBuilder();
@@ -85,7 +84,15 @@ namespace SeaMinecraftLauncherCore.Core
                     gameScript.Append(' ');
                 }
             }
-            gameScript.Replace("", "");
+            gameScript.Replace("${auth_player_name}", gameArguments.Username)
+                .Replace("${version_name}", versionInfo.ID)
+                .Replace("${game_directory}", versionInfo.VersionPath)
+                .Replace("${assets_root}", Path.Combine(minecraftRootPath, "assets"))
+                .Replace("${assets_index_name}", versionInfo.AssetIndex.ID)
+                .Replace("${auth_uuid}", gameArguments.UUID)
+                .Replace("${auth_access_token}", gameArguments.AccessToken)
+                .Replace("${user_type}", "Mojang")
+                .Replace("${version_type}", gameArguments.VersionType);
 
             return jvmScript.ToString() + gameScript.ToString().Trim(' ');
         }
@@ -123,15 +130,14 @@ namespace SeaMinecraftLauncherCore.Core
     [Obsolete("临时使用，若此版本是正式版请提交 Issues。")]
     public class GameArguments
     {
-        public GCMode GC;
-        public int MinMemory;
+        public GCMode GC = GCMode.G1GC;
         public int MaxMemory;
         public string Username;
         public int Width = 854;
         public int Height = 480;
-        public string VersionType;
-        public readonly string UUID = "000000000000000000000000000000";
-        public readonly string AccessToken = "000000000000000000000000000000";
+        public string VersionType = "Minecraft";
+        public string UUID;
+        public string AccessToken;
 
         public enum GCMode
         {

@@ -2,9 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
@@ -13,7 +10,8 @@ namespace SeaMinecraftLauncherCore.Tools
         public static JavaInfo[] FindJava()
         {
             List<JavaInfo> javaList = new List<JavaInfo>();
-            var rootReg = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32).OpenSubKey("SOFTWARE");
+            var rootReg = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem
+                ? RegistryView.Registry64 : RegistryView.Registry32).OpenSubKey("SOFTWARE");
             if (rootReg == null)
             {
                 return new JavaInfo[0];

@@ -1,7 +1,4 @@
-﻿using Downloader;
-using System;
-using System.ComponentModel;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
