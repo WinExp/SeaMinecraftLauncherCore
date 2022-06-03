@@ -52,6 +52,17 @@ namespace ConsoleApp1
                 string verPath = Path.Combine(inputVerPath, Path.GetFileName(inputVerPath) + ".json");
                 var verInfo = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GetVanillaVersionInfo(verPath);
                 var java = SeaMinecraftLauncherCore.Tools.JavaTools.AutoSelectJava(verInfo, javaInfos);
+                Console.WriteLine("Java 信息：");
+                for (int i = 1; i < javaInfos.Length + 1; i++)
+                {
+                    Console.WriteLine($@"{i}：
+版本：{javaInfos[i - 1].JavaVersion}
+路径：{javaInfos[i - 1].JavaPath}");
+                }
+                Console.WriteLine($@"
+已自动选择
+版本：{java.JavaVersion}
+路径：{java.JavaPath} 的 Java");
                 Console.Write("\n请输入分配的最大内存（单位：兆）：");
                 int memory = int.Parse(Console.ReadLine());
                 Console.Write("请输入用户名（离线登录）：");
