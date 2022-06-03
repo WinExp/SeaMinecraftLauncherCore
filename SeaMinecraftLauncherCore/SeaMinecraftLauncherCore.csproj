@@ -52,6 +52,9 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DaanV2.UUID.Net, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DaanV2.UUID.Net.1.1.0\lib\netstandard2.0\DaanV2.UUID.Net.dll</HintPath>
+    </Reference>
     <Reference Include="Downloader, Version=2.3.5.0, Culture=neutral, PublicKeyToken=844973e732f6cdf4, processorArchitecture=MSIL">
       <HintPath>..\packages\Downloader.2.3.5\lib\net452\Downloader.dll</HintPath>
     </Reference>
@@ -90,6 +93,7 @@
     <Compile Include="Core\LaunchMinecraft.cs" />
     <Compile Include="Core\Json\VanillaVersionInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tools\GameTools.cs" />
     <Compile Include="Tools\JavaTools.cs" />
     <Compile Include="Tools\PathExtension.cs" />
     <Compile Include="Tools\SystemTools.cs" />

@@ -240,6 +240,6 @@ namespace SeaMinecraftLauncherCore.Core.Json
         public readonly string Type;
 
         [JsonProperty("clientVersion")]
-        public readonly string ClientVersion;
+        public readonly Version ClientVersion;
     }
 }

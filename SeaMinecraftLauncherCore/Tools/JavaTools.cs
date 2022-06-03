@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SeaMinecraftLauncherCore.Core.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +9,7 @@ namespace SeaMinecraftLauncherCore.Tools
 {
     public static class JavaTools
     {
-        public static JavaInfo[] FindJava()
+        public static JavaInfo[] FindJava(bool deepScan = false)
         {
             List<JavaInfo> javaList = new List<JavaInfo>();
             var rootReg = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem
@@ -43,44 +44,68 @@ namespace SeaMinecraftLauncherCore.Tools
                     }
                 }
 
-                string[] javaPaths = { "Program Files\\Java", "Program Files (x86)\\Java", "MCLDownload\\ext" };
+                List<string> scanPaths = new List<string>();
+                string[] deepScanPaths = { "Program Files\\Java", "Program Files (x86)\\Java", "MCLDownload\\ext" };
+                if (deepScan)
+                {
+                    scanPaths.Add("");
+                }
+                else
+                {
+                    scanPaths.AddRange(deepScanPaths);
+                }
                 foreach (var disk in Directory.GetLogicalDrives())
                 {
-                    foreach (string javaPath in javaPaths)
+                    foreach (string path in scanPaths)
                     {
                         try
                         {
-                            DirectoryInfo directoryInfo = new DirectoryInfo(Path.Combine(disk, javaPath));
+                            string scanPath = Path.Combine(disk, path);
+                            DirectoryInfo directoryInfo = new DirectoryInfo(scanPath);
                             FileInfo[] fileInfos = directoryInfo.GetFiles("java.exe", SearchOption.AllDirectories);
                             foreach (FileInfo fileInfo in fileInfos)
                             {
-                                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
-                                JavaInfo javaInfo = new JavaInfo(fileVersionInfo.ProductName, fileInfo.FullName);
-                                foreach (var java in javaList)
+                                try
                                 {
-                                    if (java == javaInfo)
+                                    FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(fileInfo.FullName);
+                                    JavaInfo javaInfo = new JavaInfo(fileVersionInfo.ProductName, fileInfo.FullName);
+                                    foreach (var java in javaList)
                                     {
-                                        goto SkipJava;
+                                        if (java == javaInfo)
+                                        {
+                                            goto SkipJava;
+                                        }
                                     }
+                                    javaList.Add(javaInfo);
+                                SkipJava:
+                                    continue;
                                 }
-                                javaList.Add(javaInfo);
-                            SkipJava:
-                                continue;
+                                catch { }
                             }
                         }
-                        catch
-                        {
-                            continue;
-                        }
+                        catch { }
                     }
                 }
 
                 return javaList.ToArray();
             }
-            catch
+            catch (Exception ex)
             {
                 return new JavaInfo[0];
             }
+        }
+
+        public static JavaInfo AutoSelectJava(VanillaVersionInfo versionInfo, JavaInfo[] javaInfos)
+        {
+            Version dstJava = new Version(versionInfo.JavaType.Major_Version, 0);
+            foreach (var javaInfo in javaInfos)
+            {
+                if (javaInfo.JavaVersion.Major == dstJava.Major)
+                {
+                    return javaInfo;
+                }
+            }
+            throw new ArgumentException($"不存在 Major 版本为 {versionInfo.JavaType.Major_Version} 的 Java。");
         }
     }
 
@@ -91,7 +116,12 @@ namespace SeaMinecraftLauncherCore.Tools
 
         internal JavaInfo(string version, string javaHome)
         {
-            JavaVersion = Version.Parse(version);
+            Version javaVersion = Version.Parse(version);
+            if (javaVersion.Major == 1 && javaVersion.Minor == 8)
+            {
+                javaVersion = new Version(8, 0, javaVersion.Revision < 0 ? 0 : javaVersion.Revision);
+            }
+            JavaVersion = javaVersion;
             JavaPath = javaHome;
         }
 
