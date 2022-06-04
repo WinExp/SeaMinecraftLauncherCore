@@ -10,7 +10,7 @@ namespace SeaMinecraftLauncherCore.Tools
 {
     public static class JavaTools
     {
-        public static JavaInfo[] FindJava(bool deepScan = false)
+        public static JavaInfo[] FindJava()
         {
             List<JavaInfo> javaList = new List<JavaInfo>();
             var rootReg = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, Environment.Is64BitOperatingSystem

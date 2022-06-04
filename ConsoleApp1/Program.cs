@@ -33,26 +33,28 @@ namespace ConsoleApp1
 ");
             try
             {
-                var javaInfos = SeaMinecraftLauncherCore.Tools.JavaTools.FindJava(true);
-
+                var javaInfos = SeaMinecraftLauncherCore.Tools.JavaTools.FindJava();
                 /*
-                Console.WriteLine("Java 信息：");
-                for (int i = 1; i < javaInfos.Length + 1; i++)
-                {
-                    Console.WriteLine($@"{i}：
-版本：{javaInfos[i - 1].JavaVersion}
-路径 {javaInfos[i - 1].JavaPath}");
-                }
-
-                Console.Write("请选择 Java 编号：");
-                var java = javaInfos[int.Parse(Console.ReadLine()) - 1];
-                */
                 Console.Write("\n请输入版本路径（只测试了原版）：");
                 string inputVerPath = Console.ReadLine();
                 string verPath = Path.Combine(inputVerPath, Path.GetFileName(inputVerPath) + ".json");
                 var verInfo = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GetVanillaVersionInfo(verPath);
+                */
+                Console.Write("请输入 .minecraft 路径：");
+                string minecraftPath = Console.ReadLine();
+                var versions = SeaMinecraftLauncherCore.Tools.GameTools.FindVersion(Path.Combine(minecraftPath, "versions"));
+                Console.WriteLine("版本信息：");
+                for (int i = 1; i < versions.Length + 1; i++)
+                {
+                    Console.WriteLine($@"{i}：
+名称：{versions[i - 1].ID}
+版本：{versions[i - 1].ClientVersion}
+路径：{versions[i - 1].VersionPath}");
+                }
+                Console.Write("\n请选择版本序号：");
+                var verInfo = versions[int.Parse(Console.ReadLine()) - 1];
                 var java = SeaMinecraftLauncherCore.Tools.JavaTools.AutoSelectJava(verInfo, javaInfos);
-                Console.WriteLine("Java 信息：");
+                Console.WriteLine("\nJava 信息：");
                 for (int i = 1; i < javaInfos.Length + 1; i++)
                 {
                     Console.WriteLine($@"{i}：
@@ -79,7 +81,7 @@ namespace ConsoleApp1
                 Console.WriteLine(script);
                 Clipboard.SetDataObject(script);
                 Console.WriteLine("\n已将此命令复制到剪贴板。");
-                Console.Write("请问是否要启动（Y, N）：");
+                Console.Write("请问是否要启动（Y）：");
                 string input = Console.ReadLine();
                 if (input.Equals("Y", StringComparison.OrdinalIgnoreCase))
                 {

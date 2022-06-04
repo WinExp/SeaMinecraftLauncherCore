@@ -96,35 +96,6 @@ namespace SeaMinecraftLauncherCore.Core
 
             return jvmScript.ToString() + gameScript.ToString().Trim(' ');
         }
-
-        public static VanillaVersionInfo GetVanillaVersionInfo(string jsonPath)
-        {
-            if (Path.GetExtension(jsonPath) != ".json")
-            {
-                throw new ArgumentException("Json 文件后缀错误。");
-            }
-            using (StreamReader reader = new StreamReader(jsonPath))
-            {
-                string jsonStr = reader.ReadToEnd();
-                var verInfo = JsonConvert.DeserializeObject<VanillaVersionInfo>(jsonStr);
-                verInfo.VersionPath = Path.GetDirectoryName(jsonPath);
-                JObject json = JObject.Parse(jsonStr);
-                JToken arguments;
-                if (json.TryGetValue("arguments", out arguments))
-                {
-                    List<string> gameArgsList = new List<string>();
-                    foreach (var arg in arguments.SelectToken("game"))
-                    {
-                        if (arg.Type == JTokenType.String)
-                        {
-                            gameArgsList.Add(arg.ToString());
-                        }
-                    }
-                    verInfo.Arguments.GameArgs = gameArgsList.ToArray();
-                }
-                return verInfo;
-            }
-        }
     }
 
     [Obsolete("临时使用，若此版本是正式版请提交 Issues。")]
