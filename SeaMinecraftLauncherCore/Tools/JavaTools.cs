@@ -20,10 +20,19 @@ namespace SeaMinecraftLauncherCore.Tools
                 return new JavaInfo[0];
             }
 
+
+            RegistryKey javaRootReg;
+            try
+            {
+                javaRootReg = rootReg.OpenSubKey("JavaSoft");
+            }
+            catch
+            {
+                return new JavaInfo[0];
+            }
             try
             {
                 // 在注册表中寻找 Java
-                var javaRootReg = rootReg.OpenSubKey("JavaSoft");
                 var jreRootReg = javaRootReg.OpenSubKey("Java Runtime Environment");
                 if (jreRootReg != null)
                 {
@@ -38,7 +47,11 @@ namespace SeaMinecraftLauncherCore.Tools
                         javaList.Add(new JavaInfo(jreVersion, Path.Combine((string)jreInfo.GetValue("JavaHome"), "bin\\java.exe")));
                     }
                 }
+            }
+            catch { }
 
+            try
+            {
                 var jdkRootReg = javaRootReg.OpenSubKey("JDK");
                 if (jdkRootReg != null)
                 {
@@ -53,9 +66,13 @@ namespace SeaMinecraftLauncherCore.Tools
                         javaList.Add(new JavaInfo(jdkVersion, Path.Combine((string)jdkInfo.GetValue("JavaHome"), "bin\\java.exe")));
                     }
                 }
+            }
+            catch { }
 
+            try
+            {
                 // 在磁盘中按特定目录寻找 Java
-                string[] searchList = { "Program Files\\Java", "Program Files (x86)\\Java", "Java", "MCLDownload\\ext" };
+                string[] searchList = { "Program Files\\Java", "Program Files (x86)\\Java", "Java", "MCLDownload\\ext", "ProgramData\\Oracle", "ProgramData\\BadlionClient" };
                 foreach (string disk in Directory.GetLogicalDrives())
                 {
                     foreach (string name in searchList)
@@ -85,13 +102,10 @@ namespace SeaMinecraftLauncherCore.Tools
                         catch { }
                     }
                 }
+            }
+            catch { }
 
-                return javaList.ToArray();
-            }
-            catch
-            {
-                return javaList.ToArray();
-            }
+            return javaList.ToArray();
         }
 
         public static JavaInfo AutoSelectJava(VanillaVersionInfo versionInfo, JavaInfo[] javaInfos)

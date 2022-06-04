@@ -34,12 +34,6 @@ namespace ConsoleApp1
             try
             {
                 var javaInfos = SeaMinecraftLauncherCore.Tools.JavaTools.FindJava();
-                /*
-                Console.Write("\n请输入版本路径（只测试了原版）：");
-                string inputVerPath = Console.ReadLine();
-                string verPath = Path.Combine(inputVerPath, Path.GetFileName(inputVerPath) + ".json");
-                var verInfo = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GetVanillaVersionInfo(verPath);
-                */
                 Console.Write("请输入 .minecraft 路径：");
                 string minecraftPath = Console.ReadLine();
                 var versions = SeaMinecraftLauncherCore.Tools.GameTools.FindVersion(Path.Combine(minecraftPath, "versions"));

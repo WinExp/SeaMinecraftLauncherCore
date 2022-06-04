@@ -22,10 +22,21 @@ namespace SeaMinecraftLauncherCore.Tools
         {
             List<VanillaVersionInfo> versions = new List<VanillaVersionInfo>();
             DirectoryInfo directoryInfo = new DirectoryInfo(versionPath);
-            foreach (var directory in directoryInfo.GetDirectories())
+            try
             {
-                var files = directory.GetFiles(directory.Name + ".json");
-                versions.Add(GetVanillaVersionInfo(files[0].FullName));
+                foreach (var directory in directoryInfo.GetDirectories())
+                {
+                    try
+                    {
+                        var files = directory.GetFiles(directory.Name + ".json");
+                        versions.Add(GetVanillaVersionInfo(files[0].FullName));
+                    }
+                    catch { }
+                }
+            }
+            catch
+            {
+                return new VanillaVersionInfo[0];
             }
 
             return versions.ToArray();
