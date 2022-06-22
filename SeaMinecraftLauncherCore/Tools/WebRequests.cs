@@ -1,24 +1,26 @@
-﻿using Downloader;
-using System;
-using System.ComponentModel;
-using System.IO;
+﻿using System.IO;
 using System.Net;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
-    internal static class WebRequests
+    public static class WebRequests
     {
-        internal static async Task<HttpWebResponse> GetRequestAsync(string url, int timeout = 10000)
+        internal static async Task<HttpWebResponse> GetRequestAsync(string url, string type = "application/json", WebHeaderCollection headers = null, int timeout = 20000)
         {
             HttpWebRequest request = WebRequest.CreateHttp(url);
             request.Method = "GET";
             request.Timeout = timeout;
+            request.ContentType = type;
+            request.Headers = headers ?? new WebHeaderCollection();
             return (HttpWebResponse)await request.GetResponseAsync();
         }
-        internal static async Task<string> GetStringAsync(string url, int timeout = 10000)
+
+        internal static async Task<string> GetStringAsync(string url, WebHeaderCollection headers = null, int timeout = 20000)
         {
-            using (var response = await GetRequestAsync(url, timeout))
+            using (var response = await GetRequestAsync(url, headers: headers, timeout: timeout))
             {
                 using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                 {
@@ -27,84 +29,49 @@ namespace SeaMinecraftLauncherCore.Tools
             }
         }
 
-        internal static async Task<DownloadInfo> DownloadFile(string url, string downloadPath,
-            IWebProxy proxy = null, int timeout = 10000)
+        internal static async Task<HttpWebResponse> PostRequestAsync(string url, string content, string type = "application/json", int timeout = 20000)
         {
-            long fileLength = await GetDownloadFileSize(url, timeout);
-            int chunkCount = (int)Math.Ceiling((double)fileLength / 8388608);
-            DownloadConfiguration downloadConfig = new DownloadConfiguration
+            HttpWebRequest request = WebRequest.CreateHttp(url);
+            request.Method = "POST";
+            request.Timeout = timeout;
+            request.ContentType = type;
+            request.Accept = type;
+            using (var stream = request.GetRequestStream())
             {
-                BufferBlockSize = 10240,
-                ChunkCount = chunkCount,
-                Timeout = timeout,
-                MaxTryAgainOnFailover = int.MaxValue,
-                OnTheFlyDownload = false,
-                ParallelDownload = true,
-                RequestConfiguration =
-                {
-                    Proxy = proxy
-                }
-            };
-            DownloadService downloader = new DownloadService(downloadConfig);
-            downloader.DownloadFileTaskAsync(url, new DirectoryInfo(downloadPath));
-            return new DownloadInfo(downloader);
+                byte[] buffer = Encoding.UTF8.GetBytes(content);
+                stream.Write(buffer, 0, buffer.Length);
+            }
+            return (HttpWebResponse)await request.GetResponseAsync();
         }
 
-        internal static async Task<long> GetDownloadFileSize(string url, int timeout = 10000)
+        internal static async Task<string> GetPostStringAsync(string url, string content, string type = "application/json", int timeout = 20000)
         {
-            using (var response = await GetRequestAsync(url, timeout))
+            using (var response = await PostRequestAsync(url, content, type, timeout))
             {
-                return response.ContentLength;
+                using (var stream = response.GetResponseStream())
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
             }
         }
-    }
 
-    public class DownloadInfo
-    {
-        public string FileName { get; private set; }
-        public string FileExtension { get; private set; }
-        public string DownloadPath { get; private set; }
-        public long TotalFileLength { get; private set; }
-        public long ProgressedDataLength { get; private set; }
-        public double DownloadedDataPercent { get; private set; }
-        public double DownloadSpeed { get; private set; }
-        public double DownloadSpeedAverage { get; private set; }
-        public int ChunkCount { get; private set; }
-        public bool IsCompleted { get; private set; }
-
-        internal DownloadInfo(DownloadService downloader)
+        internal static async Task DownloadFileWithSingleThread(string url, string downloadPath, int timeout = 20000)
         {
-            downloader.DownloadStarted += DownloadStarted;
-            downloader.DownloadProgressChanged += DownloadProgressChanged;
-            downloader.DownloadFileCompleted += DownloadFileCompleted;
-            ChunkCount = downloader.Package.Chunks.Length;
-        }
-
-        private void DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
-        {
-            IsCompleted = true;
-        }
-
-        private void DownloadProgressChanged(object sender, Downloader.DownloadProgressChangedEventArgs e)
-        {
-            ProgressedDataLength = e.ProgressedByteSize;
-            DownloadedDataPercent = e.ProgressPercentage;
-            DownloadSpeed = e.BytesPerSecondSpeed;
-            DownloadSpeedAverage = e.AverageBytesPerSecondSpeed;
-        }
-
-        private void DownloadStarted(object sender, DownloadStartedEventArgs e)
-        {
-            FileName = Path.GetFileName(e.FileName);
-            FileExtension = Path.GetExtension(e.FileName);
-            DownloadPath = Path.GetDirectoryName(e.FileName);
-            TotalFileLength = e.TotalBytesToReceive;
-            IsCompleted = false;
-        }
-
-        public void Wait()
-        {
-            while (!IsCompleted) { }
+            using (var response = await GetRequestAsync(url, timeout: timeout))
+            {
+                using (Stream stream = response.GetResponseStream())
+                {
+                    string filePath = Path.Combine(downloadPath, Path.GetFileName(url.Trim()));
+                    filePath = filePath.Remove(filePath.IndexOf('?'));
+                    using (StreamWriter writer = new StreamWriter(filePath))
+                    {
+                        writer.Write(stream);
+                    }
+                }
+            }
         }
     }
 }

@@ -1,10 +1,27 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace SeaMinecraftLauncherCore.Core.Json
 {
     public class VanillaVersionInfo
     {
+        [JsonIgnore]
+        public readonly string[] OldVanillaJvmArgs =
+        {
+            "-XX:-UseAdaptiveSizePolicy",
+            "-XX:-OmitStackTraceInFastThrow",
+            "-Dfml.ignoreInvalidMinecraftCertificates=True",
+            "-Dfml.ignorePatchDiscrepancies=True",
+            "-Dlog4j2.formatMsgNoLookups=true",
+            "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
+            "-Djava.library.path=${natives_directory}",
+            "-Dminecraft.launcher.brand=${launcher_name}",
+            "-Dminecraft.launcher.version=${launcher_version}",
+            "-cp",
+            "${classpath}"
+        };
+
         [JsonIgnore]
         public string VersionPath { get; internal set; }
 
@@ -14,38 +31,25 @@ namespace SeaMinecraftLauncherCore.Core.Json
             public string[] GameArgs { get; internal set; }
 
             [JsonIgnore]
-            public readonly string[] JvmArgs =
-            {
-                "-XX:-UseAdaptiveSizePolicy",
-                "-XX:-OmitStackTraceInFastThrow",
-                "-Dfml.ignoreInvalidMinecraftCertificates=True",
-                "-Dfml.ignorePatchDiscrepancies=True",
-                "-Dlog4j2.formatMsgNoLookups=true",
-                "-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump",
-                "-Djava.library.path=${natives_directory}",
-                "-Dminecraft.launcher.brand=${launcher_name}",
-                "-Dminecraft.launcher.version=${launcher_version}",
-                "-cp",
-                "${classpath}"
-            };
+            public string[] JvmArgs { get; internal set; }
         }
 
         public class AssetIndexClass
         {
             [JsonProperty("id")]
-            public readonly string ID;
+            public string ID;
 
             [JsonProperty("sha1")]
-            public readonly string SHA1;
+            public string SHA1;
 
             [JsonProperty("size")]
-            public readonly long Size;
+            public long Size;
 
             [JsonProperty("totalSize")]
-            public readonly string TotalSize;
+            public string TotalSize;
 
             [JsonProperty("url")]
-            public readonly string URL;
+            public string URL;
         }
 
 
@@ -54,110 +58,294 @@ namespace SeaMinecraftLauncherCore.Core.Json
             public class ClientDownload
             {
                 [JsonProperty("sha1")]
-                public readonly string SHA1;
+                public string SHA1;
 
                 [JsonProperty("size")]
-                public readonly long Size;
+                public long Size;
 
                 [JsonProperty("url")]
-                public readonly string URL;
+                public string URL;
             }
 
             [JsonProperty("client")]
-            public readonly ClientDownload Client;
+            public ClientDownload Client;
 
             [JsonProperty("server")]
-            public readonly ClientDownload Server;
+            public ClientDownload Server;
         }
 
         public class JavaTypeClass
         {
             [JsonProperty("component")]
-            public readonly string Component;
+            public string Component;
 
             [JsonProperty("majorVersion")]
-            public readonly int Major_Version;
+            public int Major_Version;
         }
 
-        public class LibrariesClass
+        public class LibrariesClass : IEquatable<LibrariesClass>
         {
-            public class LibraryDownload
+            public class LibraryDownload : IEquatable<LibraryDownload>
             {
-                public class Download
+                public class Download : IEquatable<Download>
                 {
                     [JsonProperty("path")]
-                    public readonly string Path;
+                    public string Path;
 
                     [JsonProperty("id")]
-                    public readonly string ID;
+                    public string ID;
 
                     [JsonProperty("sha1")]
-                    public readonly string SHA1;
+                    public string SHA1;
 
                     [JsonProperty("size")]
-                    public readonly long Size;
+                    public long Size;
 
                     [JsonProperty("url")]
-                    public readonly string URL;
+                    public string URL;
+
+                    public override bool Equals(object obj)
+                    {
+                        return Equals(obj as Download);
+                    }
+
+                    public bool Equals(Download other)
+                    {
+                        return Path == other?.Path
+                            && ID == other?.ID
+                            && SHA1 == other?.SHA1
+                            && Size == other?.Size
+                            && URL == other?.URL;
+                    }
+
+                    public static bool operator ==(Download d1, Download d2)
+                    {
+                        if (object.Equals(d1, null) && object.Equals(d2, null))
+                        {
+                            return true;
+                        }
+                        else if (object.Equals(d1, null) || object.Equals(d2, null))
+                        {
+                            return false;
+                        }
+                        return d1.Equals(d2);
+                    }
+                    public static bool operator != (Download d1, Download d2)
+                    {
+                        return !(d1 == d2);
+                    }
                 }
 
-                public class ClassifiersClass
+                public class ClassifiersClass : IEquatable<ClassifiersClass>
                 {
                     [JsonProperty("natives-windows")]
-                    public readonly Download Windows;
+                    public Download Windows;
 
                     [JsonProperty("natives-linux")]
-                    public readonly Download Linux;
+                    public Download Linux;
 
                     [JsonProperty("natives-macos")]
-                    public readonly Download MacOS;
+                    public Download MacOS;
+
+                    public override bool Equals(object obj)
+                    {
+                        return Equals(obj as ClassifiersClass);
+                    }
+
+                    public bool Equals(ClassifiersClass other)
+                    {
+                        return Windows == other?.Windows
+                            && Linux == other?.Windows
+                            && MacOS == other?.MacOS;
+                    }
+
+                    public static bool operator ==(ClassifiersClass c1, ClassifiersClass c2)
+                    {
+                        if (object.Equals(c1, null) && object.Equals(c2, null))
+                        {
+                            return true;
+                        }
+                        else if (object.Equals(c1, null) || object.Equals(c2, null))
+                        {
+                            return false;
+                        }
+                        return c1.Equals(c2);
+                    }
+
+                    public static bool operator != (ClassifiersClass c1, ClassifiersClass c2)
+                    {
+                        return !(c1 == c2);
+                    }
                 }
 
                 [JsonProperty("artifact")]
-                public readonly Download Artifact;
+                public Download Artifact;
 
                 [JsonProperty("classifiers")]
-                public readonly ClassifiersClass Classifiers;
+                public ClassifiersClass Classifiers;
+
+                public bool Equals(LibraryDownload other)
+                {
+                    return Artifact == other?.Artifact
+                        && Classifiers == other.Classifiers;
+                }
+
+                public static bool operator ==(LibraryDownload l1, LibraryDownload l2)
+                {
+                    if (object.Equals(l1, null) && object.Equals(l2, null))
+                    {
+                        return true;
+                    }
+                    else if (object.Equals(l1, null) || object.Equals(l2, null))
+                    {
+                        return false;
+                    }
+
+                    return l1.Equals(l2);
+                }
+
+                public static bool operator !=(LibraryDownload l1, LibraryDownload l2)
+                {
+                    return !(l1 == l2);
+                }
             }
 
-            public class NativesClass
+            public class NativesClass : IEquatable<NativesClass>
             {
                 [JsonProperty("natives-windows")]
-                public readonly string Windows;
+                public string Windows;
 
                 [JsonProperty("natives-linux")]
-                public readonly string Linux;
+                public string Linux;
 
                 [JsonProperty("natives-macos")]
-                public readonly string MacOS;
+                public string MacOS;
+
+                public bool Equals(NativesClass other)
+                {
+                    return Windows == other?.Windows
+                        && Linux == other?.Linux
+                        && MacOS == other?.MacOS;
+                }
+
+                public static bool operator ==(NativesClass n1, NativesClass n2)
+                {
+                    if (object.Equals(n1, null) && object.Equals(n2, null))
+                    {
+                        return true;
+                    }
+                    else if (object.Equals(n1, null) || object.Equals(n2, null))
+                    {
+                        return false;
+                    }
+                    return n1.Equals(n2);
+                }
+
+                public static bool operator !=(NativesClass n1, NativesClass n2)
+                {
+                    return !(n1 == n2);
+                }
             }
 
-            public class Rule
+            public class Rule : IEquatable<Rule>
             {
-                public class OSClass
+                public class OSClass : IEquatable<OSClass>
                 {
                     [JsonProperty("name")]
-                    public readonly string Name;
+                    public string Name;
+
+                    public bool Equals(OSClass other)
+                    {
+                        return Name == other?.Name;
+                    }
+
+                    public static bool operator ==(OSClass o1, OSClass o2)
+                    {
+                        if (object.Equals(o1, null) && object.Equals(o2, null))
+                        {
+                            return true;
+                        }
+                        else if (object.Equals(o2, null) || object.Equals(o2, null))
+                        {
+                            return false;
+                        }
+                        return o1.Equals(o2);
+                    }
+
+                    public static bool operator !=(OSClass o1, OSClass o2)
+                    {
+                        return !(o1 == o2);
+                    }
                 }
 
                 [JsonProperty("action")]
-                public readonly string Action;
+                public string Action;
 
                 [JsonProperty("os")]
-                public readonly OSClass OS;
+                public OSClass OS;
+
+                public bool Equals(Rule other)
+                {
+                    return Action == other?.Action
+                        && OS == other?.OS;
+                }
+
+                public static bool operator ==(Rule r1, Rule r2)
+                {
+                    if (object.Equals(r1, null) && object.Equals(r2, null))
+                    {
+                        return true;
+                    }
+                    if (object.Equals(r1, null) || object.Equals(r2, null))
+                    {
+                        return false;
+                    }
+                    return r1.Equals(r2);
+                }
+
+                public static bool operator !=(Rule r1, Rule r2)
+                {
+                    return !(r1 == r2);
+                }
             }
 
             [JsonProperty("downloads")]
-            public readonly LibraryDownload Download;
+            public LibraryDownload Download;
 
             [JsonProperty("name")]
-            public readonly string Name;
+            public string Name;
 
             [JsonProperty("natives")]
-            public readonly NativesClass Natives;
+            public NativesClass Natives;
 
             [JsonProperty("rules")]
-            public readonly Rule[] Rules;
+            public Rule[] Rules;
+
+            public bool Equals(LibrariesClass other)
+            {
+                return Download == other.Download
+                    && Name == other.Name
+                    && Natives == other.Natives
+                    && Rules == other.Rules;
+            }
+
+            public static bool operator ==(LibrariesClass l1, LibrariesClass l2)
+            {
+                if (object.Equals(l1, null) && object.Equals(l2, null))
+                {
+                    return true;
+                }
+                else if (object.Equals(l1, null) || object.Equals(l2, null))
+                {
+                    return false;
+                }
+                return l1.Equals(l2);
+            }
+
+            public static bool operator !=(LibrariesClass l1, LibrariesClass l2)
+            {
+                return !(l1 == l2);
+            }
         }
 
         public class LoggingClass
@@ -167,79 +355,76 @@ namespace SeaMinecraftLauncherCore.Core.Json
                 public class Download
                 {
                     [JsonProperty("id")]
-                    public readonly string ID;
+                    public string ID;
 
                     [JsonProperty("sha1")]
-                    public readonly string SHA1;
+                    public string SHA1;
 
                     [JsonProperty("size")]
-                    public readonly long Size;
+                    public long Size;
 
                     [JsonProperty("url")]
-                    public readonly string URL;
+                    public string URL;
                 }
 
                 [JsonProperty("argument")]
-                public readonly string Argument;
+                public string Argument;
 
                 [JsonProperty("file")]
-                public readonly Download File;
+                public Download File;
 
                 [JsonProperty("type")]
-                public readonly string Type;
+                public string Type;
             }
 
             [JsonProperty("client")]
-            public readonly Clientclass Client;
+            public Clientclass Client;
 
         }
 
         [JsonProperty("arguments")]
-        public readonly ArgumentsClass Arguments;
+        public ArgumentsClass Arguments;
 
         [JsonProperty("minecraftArguments")]
-        public readonly string OldMinecraftArguments;
+        public string OldMinecraftArguments;
 
-        [JsonProperty("assetIndex")]
-        public readonly AssetIndexClass AssetIndex;
+        [JsonProperty("assetIndex", Required = Required.Always)]
+        public AssetIndexClass AssetIndex;
 
-        [JsonProperty("assets")]
-        public readonly string Assets;
+        [JsonProperty("assets", Required = Required.Always)]
+        public string Assets;
 
         [JsonProperty("complianceLevel")]
-        public readonly int ComplianceLevel;
+        public int ComplianceLevel;
 
-        [JsonProperty("downloads")]
-        public readonly DownloadsClass Downloads;
+        [JsonProperty("downloads", Required = Required.Always)]
+        public DownloadsClass Downloads;
 
-        [JsonProperty("id")]
-        public readonly string ID;
+        [JsonProperty("id", Required = Required.Always)]
+        public string ID;
 
         [JsonProperty("javaVersion")]
-        public readonly JavaTypeClass JavaType;
+        public JavaTypeClass JavaType;
 
-        [JsonProperty("libraries")]
-        public readonly LibrariesClass[] Libraries;
+        [JsonProperty("libraries", Required = Required.Always)]
+        public List<LibrariesClass> Libraries;
 
-        [JsonProperty("logging")]
-        public readonly LoggingClass Logging;
+        [JsonProperty("logging", Required = Required.Always)]
+        public LoggingClass Logging;
 
-        [JsonProperty("mainClass")]
-        public readonly string MainClass;
+        [JsonProperty("mainClass", Required = Required.Always)]
+        public string MainClass;
 
         [JsonProperty("minimumLauncherVersion")]
-        public readonly string MinLauncherVersion;
+        public string MinLauncherVersion;
 
-        [JsonProperty("releaseTime")]
-        public readonly DateTime ReleaseTime;
+        [JsonProperty("releaseTime", Required = Required.Always)]
+        public DateTime ReleaseTime;
 
         [JsonProperty("time")]
-        public readonly DateTime Time;
+        public DateTime Time;
 
-        [JsonProperty("type")]
-        public readonly string Type;
-
-        [JsonProperty("clientVersion")]
-        public readonly string ClientVersion;
+        [JsonProperty("type", Required = Required.Always)]
+        public string Type;
     }
 }

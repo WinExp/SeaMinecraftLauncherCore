@@ -10,6 +10,10 @@ namespace SeaMinecraftLauncherCore.Tools
 {
     public static class JavaTools
     {
+        /// <summary>
+        /// 寻找计算机中的 Java。
+        /// </summary>
+        /// <returns>查找到的 Java 信息。</returns>
         public static JavaInfo[] FindJava()
         {
             List<JavaInfo> javaList = new List<JavaInfo>();
@@ -38,13 +42,14 @@ namespace SeaMinecraftLauncherCore.Tools
                 {
                     foreach (string jre in jreRootReg.GetSubKeyNames())
                     {
-                        string jreVersion = jre.Replace('_', '.');
-                        if (!jreVersion.Contains('.'))
+                        try
                         {
-                            jreVersion += ".0";
+                            var jreInfo = jreRootReg.OpenSubKey(jre);
+                            string path = Path.Combine(jreInfo.GetValue("JavaHome").ToString(), "bin\\java.exe");
+                            string version = FileVersionInfo.GetVersionInfo(path).ProductVersion;
+                            javaList.Add(new JavaInfo(version, path));
                         }
-                        var jreInfo = jreRootReg.OpenSubKey(jre);
-                        javaList.Add(new JavaInfo(jreVersion, Path.Combine((string)jreInfo.GetValue("JavaHome"), "bin\\java.exe")));
+                        catch { }
                     }
                 }
             }
@@ -57,13 +62,10 @@ namespace SeaMinecraftLauncherCore.Tools
                 {
                     foreach (string jdk in jdkRootReg.GetSubKeyNames())
                     {
-                        string jdkVersion = jdk.Replace('_', '.');
-                        if (!jdkVersion.Contains('.'))
-                        {
-                            jdkVersion += ".0";
-                        }
                         var jdkInfo = jdkRootReg.OpenSubKey(jdk);
-                        javaList.Add(new JavaInfo(jdkVersion, Path.Combine((string)jdkInfo.GetValue("JavaHome"), "bin\\java.exe")));
+                        string path = Path.Combine(jdkInfo.GetValue("JavaHome").ToString(), "bin\\java.exe");
+                        string version = FileVersionInfo.GetVersionInfo(path).ProductVersion;
+                        javaList.Add(new JavaInfo(version, path));
                     }
                 }
             }
@@ -108,26 +110,59 @@ namespace SeaMinecraftLauncherCore.Tools
             return javaList.ToArray();
         }
 
+        /// <summary>
+        /// 自动选择 Java。
+        /// </summary>
+        /// <param name="versionInfo"></param>
+        /// <param name="javaInfos"></param>
+        /// <returns>Java 信息。</returns>
+        /// <exception cref="NotImplementedException"></exception>
+        /// <exception cref="ArgumentException"></exception>
         public static JavaInfo AutoSelectJava(VanillaVersionInfo versionInfo, JavaInfo[] javaInfos)
         {
+            int dstJavaMajor;
+            Version version = Version.Parse(versionInfo.Assets);
+            if (version.Minor <= 16 && version.Major == 1)
+            {
+                dstJavaMajor = 8;
+            }
+            else if (version.Minor == 17 && version.Major == 1)
+            {
+                dstJavaMajor = 16;
+            }
+            else if (version.Minor >= 18 && version.Major == 1)
+            {
+                dstJavaMajor = 17;
+            }
+            else
+            {
+                if (versionInfo.JavaType != null)
+                {
+                    dstJavaMajor = versionInfo.JavaType.Major_Version;
+                }
+                else
+                {
+                    throw new NotImplementedException("不支持此版本的自动选择 Java。");
+                }
+            }
             JavaInfo selectJava = null;
             foreach (var javaInfo in javaInfos)
             {
                 if (selectJava != null)
                 {
-                    if (javaInfo.JavaVersion > selectJava.JavaVersion && javaInfo.JavaVersion.Major == versionInfo.JavaType.Major_Version)
+                    if (javaInfo.JavaVersion > selectJava.JavaVersion && javaInfo.JavaVersion.Major == dstJavaMajor)
                     {
                         selectJava = javaInfo;
                     }
                 }
-                else if (javaInfo.JavaVersion.Major == versionInfo.JavaType.Major_Version)
+                else if (javaInfo.JavaVersion.Major == dstJavaMajor)
                 {
                     selectJava = javaInfo;
                 }
             }
             if (selectJava == null)
             {
-                throw new ArgumentException($"不存在 Major 版本为 {versionInfo.JavaType.Major_Version} 的 Java。");
+                throw new ArgumentException($"不存在 Major 版本为 {dstJavaMajor} 的 Java。");
             }
             return selectJava;
         }
@@ -141,10 +176,12 @@ namespace SeaMinecraftLauncherCore.Tools
         internal JavaInfo(string version, string javaHome)
         {
             Version javaVersion = Version.Parse(version);
+            /*
             if (javaVersion.Major == 1)
             {
                 javaVersion = new Version(javaVersion.Minor, 0, javaVersion.Revision < 0 ? 0 : javaVersion.Revision);
             }
+            */
             JavaVersion = javaVersion;
             JavaPath = javaHome;
         }

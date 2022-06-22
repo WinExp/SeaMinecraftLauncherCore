@@ -8,14 +8,14 @@ namespace SeaMinecraftLauncherCore.Core.Json
         public class LatestClass
         {
             [JsonProperty("release")]
-            public readonly string Release;
+            public string Release;
 
             [JsonProperty("snapshot")]
-            public readonly string Snapshot;
+            public string Snapshot;
         }
 
         [JsonProperty("versions")]
-        public readonly WebVersionInfo[] Versions;
+        public WebVersionInfo[] Versions;
 
         public WebVersionInfo FindLatestVersion(string latest)
         {

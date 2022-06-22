@@ -1,4 +1,6 @@
 ﻿using DaanV2.UUID;
+using SeaMinecraftLauncherCore.Core.Model.Authentication;
+using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,74 +35,132 @@ namespace ConsoleApp1
 ");
             try
             {
-                var javaInfos = SeaMinecraftLauncherCore.Tools.JavaTools.FindJava();
+                /*
+                var javaInfos = JavaTools.FindJava();
                 Console.Write("请输入 .minecraft 路径：");
                 string minecraftPath = Console.ReadLine();
-                var versions = SeaMinecraftLauncherCore.Tools.GameTools.FindVersion(Path.Combine(minecraftPath, "versions"));
+                var versions = GameTools.FindVersion(minecraftPath);
                 Console.WriteLine("版本信息：");
                 for (int i = 1; i < versions.Length + 1; i++)
                 {
                     Console.WriteLine($@"{i}：
 名称：{versions[i - 1].ID}
-版本：{versions[i - 1].ClientVersion}
+版本：{versions[i - 1].Assets}
 路径：{versions[i - 1].VersionPath}");
                 }
                 Console.Write("\n请选择版本序号：");
                 var verInfo = versions[int.Parse(Console.ReadLine()) - 1];
-                var java = SeaMinecraftLauncherCore.Tools.JavaTools.AutoSelectJava(verInfo, javaInfos);
-                Console.WriteLine("\nJava 信息：");
-                for (int i = 1; i < javaInfos.Length + 1; i++)
+                Console.Write("请输入测试功能（1：启动游戏 2：获取缺失 Assets 3：获取缺失 Libraries）：");
+                string testFunction = Console.ReadLine();
+                if (testFunction == "1")
                 {
-                    Console.WriteLine($@"{i}：
+                    var java = JavaTools.AutoSelectJava(verInfo, javaInfos);
+                    Console.WriteLine("\nJava 信息：");
+                    for (int i = 1; i < javaInfos.Length + 1; i++)
+                    {
+                        Console.WriteLine($@"{i}：
 版本：{javaInfos[i - 1].JavaVersion}
 路径：{javaInfos[i - 1].JavaPath}");
-                }
-                Console.WriteLine($@"
+                    }
+                    Console.WriteLine($@"
 已自动选择
 版本：{java.JavaVersion}
 路径：{java.JavaPath} 的 Java");
-                Console.Write("\n请输入分配的最大内存（单位：兆）：");
-                int memory = int.Parse(Console.ReadLine());
-                Console.Write("请输入用户名（离线登录）：");
-                string username = Console.ReadLine();
-                string uuid = SeaMinecraftLauncherCore.Tools.GameTools.GenerateOfflineUUID(username);
-                var gameArguments = new SeaMinecraftLauncherCore.Core.GameArguments
-                {
-                    Username = username,
-                    MaxMemory = 1024,
-                    UUID = uuid,
-                    AccessToken = uuid
-                };
-                string script = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GenerateStartScript(verInfo, gameArguments, java);
-                Console.WriteLine(script);
-                Clipboard.SetDataObject(script);
-                Console.WriteLine("\n已将此命令复制到剪贴板。");
-                Console.Write("请问是否要启动（Y）：");
-                string input = Console.ReadLine();
-                if (input.Equals("Y", StringComparison.OrdinalIgnoreCase))
-                {
-                    ProcessStartInfo startInfo = new ProcessStartInfo
+                    Console.Write("\n请输入分配的最大内存（单位：兆）：");
+                    int memory = int.Parse(Console.ReadLine());
+                    Console.Write("请输入用户名（离线登录）：");
+                    string username = Console.ReadLine();
+                    string uuid = GameTools.GenerateOfflineUUID(username);
+                    var gameArguments = new SeaMinecraftLauncherCore.Core.GameArguments
                     {
-                        UseShellExecute = false,
-                        FileName = "cmd",
-                        RedirectStandardInput = true
+                        Username = username,
+                        MaxMemory = 1024,
+                        UUID = uuid,
+                        AccessToken = uuid
                     };
-                    Process process = new Process
+                    string script = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GenerateStartScript(verInfo, gameArguments, java);
+                    Console.WriteLine(script);
+                    Clipboard.SetDataObject(script);
+                    Console.WriteLine("\n已将此命令复制到剪贴板。");
+                    Console.Write("请问是否要启动（Y）：");
+                    string input = Console.ReadLine();
+                    if (input.Equals("Y", StringComparison.OrdinalIgnoreCase))
                     {
-                        StartInfo = startInfo
-                    };
-                    process.Start();
-                    process.StandardInput.WriteLine("@echo off");
-                    process.StandardInput.WriteLine(script);
-                    process.StandardInput.WriteLine("exit");
-                    process.WaitForExit();
-                    process.Close();
+                        ProcessStartInfo startInfo = new ProcessStartInfo
+                        {
+                            UseShellExecute = false,
+                            FileName = "cmd",
+                            RedirectStandardInput = true
+                        };
+                        Process process = new Process
+                        {
+                            StartInfo = startInfo
+                        };
+                        process.Start();
+                        process.StandardInput.WriteLine("@echo off");
+                        process.StandardInput.WriteLine(script);
+                        process.StandardInput.WriteLine("exit");
+                        process.WaitForExit();
+                        process.Close();
+                    }
+                }
+                else if (testFunction == "2")
+                {
+                    var assets = GameTools.GetMissingAssets(verInfo);
+                    Console.WriteLine("以下是缺失 Assets 信息：");
+                    foreach (var asset in assets.Assets)
+                    {
+                        Console.WriteLine($@"{asset.Key}：
+SHA1：{asset.Value.SHA1}
+大小（字节）：{asset.Value.Size}" + '\n');
+                    }
+                }
+                else if (testFunction == "3")
+                {
+                    var libraries = GameTools.GetMissingLibraries(verInfo);
+                    Console.WriteLine("以下是缺失 Libraries 信息：");
+                    foreach (var library in libraries)
+                    {
+                        Console.WriteLine($@"{library.Name}：
+路径：{library.Download?.Artifact.Path}
+SHA1：{library.Download?.Artifact.Size}
+大小（字节）：{library.Download?.Artifact.Size}");
+                    }
+                }
+                */
+                MicrosoftAuthenticator microsoftAuthenticator = new MicrosoftAuthenticator();
+                Console.WriteLine("正在进行 OAuth 验证");
+                string code = microsoftAuthenticator.MicrosoftOAuthAuthenticateAsync().Result;
+                Console.WriteLine("正在进行 Token 验证");
+                var token = microsoftAuthenticator.MicrosoftTokenAuthenticateAsync(code).Result;
+                Console.WriteLine("正在进行 XBL 验证");
+                var xblToken = microsoftAuthenticator.XBLAuthenticateAsync(token.Access_Token).Result;
+                Console.WriteLine("正在进行 XSTS 验证");
+                var xstsToken = microsoftAuthenticator.XSTSAuthenticateAsync(xblToken.Token).Result;
+                Console.WriteLine("正在获取 Minecraft Access Token");
+                var minecraftToken = microsoftAuthenticator.MinecraftAuthenticateAsync(xstsToken).Result;
+                Console.WriteLine("正在验证账户所有权");
+                if (microsoftAuthenticator.CheckGameOwnershipAsync(minecraftToken).Result)
+                {
+                    Console.WriteLine("正在获取 Profile");
+                    var profile = microsoftAuthenticator.GetProfileAsync(minecraftToken).Result;
+                    Console.WriteLine($@"
+
+用户名: {profile.Username}
+
+Access Token: {minecraftToken}
+
+UUID: {profile.UUID}");
+                }
+                else
+                {
+                    Console.WriteLine("此账户没有 Minecraft。");
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($@"出现错误，错误信息：
-{ex.Message}");
+{ex}");
             }
             Console.WriteLine("\n按下任意键退出...");
             Console.ReadKey();

@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SeaMinecraftLauncherCore.Core.Json;
+using SeaMinecraftLauncherCore.Core.Model.Authentication;
 using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
@@ -11,16 +12,29 @@ namespace SeaMinecraftLauncherCore.Core
 {
     public static class LaunchMinecraft
     {
+        /// <summary>
+        /// 生成启动脚本。
+        /// </summary>
+        /// <param name="versionInfo"></param>
+        /// <param name="gameArguments"></param>
+        /// <param name="javaInfo"></param>
+        /// <returns>启动脚本。</returns>
         public static string GenerateStartScript(VanillaVersionInfo versionInfo, GameArguments gameArguments, JavaInfo javaInfo)
         {
             var jvmScript = new StringBuilder($"\"{javaInfo.JavaPath}\" -XX:+Use{gameArguments.GC} ");
             var minecraftRootPath = PathExtension.GetMinecraftRootPath(versionInfo.VersionPath);
+            string libraryPath = Path.Combine(minecraftRootPath, "libraries");
 
-            foreach (string jvmArg in versionInfo.Arguments.JvmArgs)
+            foreach (string jvmArg in versionInfo.Arguments?.JvmArgs ?? versionInfo.OldVanillaJvmArgs)
             {
-                jvmScript.Append(jvmArg);
+                jvmScript.Append(jvmArg.Replace(" ", ""));
                 jvmScript.Append(' ');
             }
+            jvmScript.Replace("${natives_directory}", '\"' + Path.Combine(versionInfo.VersionPath, versionInfo.ID + "-natives") + '\"');
+            jvmScript.Replace("${library_directory}", '\"' + libraryPath + '\"');
+            jvmScript.Replace("${classpath_separator}", ";");
+
+            bool isNewForge = false;
             StringBuilder classpath = new StringBuilder("\"");
             foreach (var library in versionInfo.Libraries)
             {
@@ -58,16 +72,47 @@ namespace SeaMinecraftLauncherCore.Core
                         }
                     }
                 }
-                classpath.Append(Path.Combine(minecraftRootPath, "libraries", library.Download.Artifact.Path.Replace('/', '\\')));
-                classpath.Append(';');
+                if (library.Download != null)
+                {
+                    if (library.Download.Artifact != null)
+                    {
+                        if (library.Name.Contains("net.minecraftforge") && Version.Parse(versionInfo.Assets) > new Version(1, 13))
+                        {
+                            isNewForge = true;
+                        }
+                        string path = Path.Combine(libraryPath, library.Download.Artifact.Path.Replace('/', '\\'));
+                        if (classpath.ToString().Contains(path))
+                        {
+                            goto SkipLibrary;
+                        }
+                        classpath.Append(path);
+                        classpath.Append(';');
+                    }
+                }
+                else
+                {
+                    string[] names = library.Name.Split(':');
+                    names[0] = names[0].Replace('.', '\\');
+                    classpath.Append(Path.Combine(libraryPath, string.Join("\\", names), names[names.Length - 2] + '-' + names[names.Length - 1] + ".jar"));
+                    classpath.Append(';');
+                }
             SkipLibrary:
                 continue;
             }
-            classpath.Append(Path.Combine(versionInfo.VersionPath, versionInfo.ID + ".jar"));
+            if (isNewForge)
+            {
+                classpath.Remove(classpath.Length - 1, 1);
+            }
+            else
+            {
+                classpath.Append(Path.Combine(versionInfo.VersionPath, versionInfo.ID + ".jar"));
+            }
             classpath.Append('\"');
             jvmScript.Replace("${classpath}", classpath.ToString());
+            jvmScript.Replace("${version_name}", '\"' + versionInfo.ID + '\"');
+            jvmScript.Append($"-Xmn256m -Xmx{gameArguments.MaxMemory}m ");
             jvmScript.Append(versionInfo.MainClass);
-            jvmScript.Append($" -Xmn256m -Xmx{gameArguments.MaxMemory}m ");
+            jvmScript.Append(' ');
 
 
             var gameScript = new StringBuilder();
@@ -85,9 +130,9 @@ namespace SeaMinecraftLauncherCore.Core
                 }
             }
             gameScript.Replace("${auth_player_name}", gameArguments.Username)
-                .Replace("${version_name}", versionInfo.ID)
-                .Replace("${game_directory}", versionInfo.VersionPath)
-                .Replace("${assets_root}", Path.Combine(minecraftRootPath, "assets"))
+                .Replace("${version_name}", '\"' + versionInfo.ID + '\"')
+                .Replace("${game_directory}", '\"' + versionInfo.VersionPath + '\"')
+                .Replace("${assets_root}", '\"' + Path.Combine(minecraftRootPath, "assets") + '\"')
                 .Replace("${assets_index_name}", versionInfo.AssetIndex.ID)
                 .Replace("${auth_uuid}", gameArguments.UUID)
                 .Replace("${auth_access_token}", gameArguments.AccessToken)
@@ -98,17 +143,23 @@ namespace SeaMinecraftLauncherCore.Core
         }
     }
 
-    [Obsolete("临时使用，若此版本是正式版请提交 Issues。")]
     public class GameArguments
     {
-        public GCMode GC = GCMode.G1GC;
-        public int MaxMemory;
-        public string Username;
-        public int Width = 854;
-        public int Height = 480;
-        public string VersionType = "Minecraft";
-        public string UUID;
-        public string AccessToken;
+        public GCMode GC { get; set; } = GCMode.G1GC;
+
+        public int MaxMemory { get; set; }
+
+        public int Width { get; set; } = 854;
+
+        public int Height { get; set; } = 480;
+
+        public string VersionType { get; set; } = "Minecraft";
+
+        public string Username { get; set; }
+
+        public string AccessToken { get; set; }
+
+        public string UUID { get; set; }
 
         public enum GCMode
         {

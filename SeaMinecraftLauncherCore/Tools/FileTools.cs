@@ -1,5 +1,7 @@
-﻿using System;
+﻿using SeaMinecraftLauncherCore.Core.Json;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,6 +39,21 @@ namespace SeaMinecraftLauncherCore.Tools
             catch { }
 
             return files.ToArray();
+        }
+
+        internal static async Task<string> GetLocalVersion(string sha1)
+        {
+            VersionManifest versionManifest = await GameTools.GetWebVersionInfo();
+            foreach (var ver in versionManifest.Versions)
+            {
+                string verStr = await WebRequests.GetStringAsync(ver.Url);
+                var verInfo = GameTools.GetVanillaVersionInfoWithJsonString(verStr);
+                if (verInfo.Downloads.Client.SHA1.Equals(sha1, StringComparison.OrdinalIgnoreCase))
+                {
+                    return verInfo.ID;
+                }
+            }
+            throw new VersionNotFoundException($"未找到 SHA1 值为 {sha1} 的版本。");
         }
     }
 }
