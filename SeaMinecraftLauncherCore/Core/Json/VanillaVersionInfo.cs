@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SeaMinecraftLauncherCore.Core.Json
 {
@@ -120,11 +122,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
                     public static bool operator ==(Download d1, Download d2)
                     {
-                        if (object.Equals(d1, null) && object.Equals(d2, null))
+                        if (Equals(d1, null) && Equals(d2, null))
                         {
                             return true;
                         }
-                        else if (object.Equals(d1, null) || object.Equals(d2, null))
+                        else if (Equals(d1, null) || Equals(d2, null))
                         {
                             return false;
                         }
@@ -161,11 +163,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
                     public static bool operator ==(ClassifiersClass c1, ClassifiersClass c2)
                     {
-                        if (object.Equals(c1, null) && object.Equals(c2, null))
+                        if (Equals(c1, null) && Equals(c2, null))
                         {
                             return true;
                         }
-                        else if (object.Equals(c1, null) || object.Equals(c2, null))
+                        else if (Equals(c1, null) || Equals(c2, null))
                         {
                             return false;
                         }
@@ -192,11 +194,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
                 public static bool operator ==(LibraryDownload l1, LibraryDownload l2)
                 {
-                    if (object.Equals(l1, null) && object.Equals(l2, null))
+                    if (Equals(l1, null) && Equals(l2, null))
                     {
                         return true;
                     }
-                    else if (object.Equals(l1, null) || object.Equals(l2, null))
+                    else if (Equals(l1, null) || Equals(l2, null))
                     {
                         return false;
                     }
@@ -230,11 +232,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
                 public static bool operator ==(NativesClass n1, NativesClass n2)
                 {
-                    if (object.Equals(n1, null) && object.Equals(n2, null))
+                    if (Equals(n1, null) && Equals(n2, null))
                     {
                         return true;
                     }
-                    else if (object.Equals(n1, null) || object.Equals(n2, null))
+                    else if (Equals(n1, null) || Equals(n2, null))
                     {
                         return false;
                     }
@@ -261,11 +263,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
                     public static bool operator ==(OSClass o1, OSClass o2)
                     {
-                        if (object.Equals(o1, null) && object.Equals(o2, null))
+                        if (Equals(o1, null) && Equals(o2, null))
                         {
                             return true;
                         }
-                        else if (object.Equals(o2, null) || object.Equals(o2, null))
+                        else if (Equals(o2, null) || Equals(o2, null))
                         {
                             return false;
                         }
@@ -292,11 +294,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
                 public static bool operator ==(Rule r1, Rule r2)
                 {
-                    if (object.Equals(r1, null) && object.Equals(r2, null))
+                    if (Equals(r1, null) && Equals(r2, null))
                     {
                         return true;
                     }
-                    if (object.Equals(r1, null) || object.Equals(r2, null))
+                    if (Equals(r1, null) || Equals(r2, null))
                     {
                         return false;
                     }
@@ -331,11 +333,11 @@ namespace SeaMinecraftLauncherCore.Core.Json
 
             public static bool operator ==(LibrariesClass l1, LibrariesClass l2)
             {
-                if (object.Equals(l1, null) && object.Equals(l2, null))
+                if (Equals(l1, null) && Equals(l2, null))
                 {
                     return true;
                 }
-                else if (object.Equals(l1, null) || object.Equals(l2, null))
+                else if (Equals(l1, null) || Equals(l2, null))
                 {
                     return false;
                 }

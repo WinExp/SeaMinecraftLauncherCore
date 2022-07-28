@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace ConsoleApp1
+namespace TestLaunchMinecraft
 {
     internal class Program
     {
@@ -35,7 +35,6 @@ namespace ConsoleApp1
 ");
             try
             {
-                /*
                 var javaInfos = JavaTools.FindJava();
                 Console.Write("请输入 .minecraft 路径：");
                 string minecraftPath = Console.ReadLine();
@@ -68,19 +67,47 @@ namespace ConsoleApp1
 路径：{java.JavaPath} 的 Java");
                     Console.Write("\n请输入分配的最大内存（单位：兆）：");
                     int memory = int.Parse(Console.ReadLine());
-                    Console.Write("请输入用户名（离线登录）：");
-                    string username = Console.ReadLine();
-                    string uuid = GameTools.GenerateOfflineUUID(username);
+                    Console.Write("请输入验证模式（1: 微软登录 2: 离线登录）：");
+                    int loginMode = int.Parse(Console.ReadLine());
+                    string username;
+                    string accessToken;
+                    string uuid;
+                    if (loginMode == 1)
+                    {
+                        Console.WriteLine("微软登录：开始");
+                        Console.WriteLine("微软登录：正在进行 OAuth 验证");
+                        string code = MicrosoftAuthenticator.MicrosoftOAuthAuthenticateAsync().Result;
+                        Console.WriteLine("微软登录：正在进行 Token 验证");
+                        var token = MicrosoftAuthenticator.MicrosoftTokenAuthenticateAsync(code).Result;
+                        Console.WriteLine("微软登录：正在进行 XBL 验证");
+                        var xblToken = MicrosoftAuthenticator.XBLAuthenticateAsync(token.Access_Token).Result;
+                        Console.WriteLine("微软登录：正在进行 XSTS 验证");
+                        var xstsToken = MicrosoftAuthenticator.XSTSAuthenticateAsync(xblToken.Token).Result;
+                        Console.WriteLine("微软登录：正在获取 Minecraft Access Token");
+                        accessToken = MicrosoftAuthenticator.MinecraftAuthenticateAsync(xstsToken).Result.AccessToken;
+                        Console.WriteLine("微软登录：正在获取 Profile");
+                        var profile = MicrosoftAuthenticator.GetProfileAsync(accessToken).Result;
+                        username = profile.Username;
+                        uuid = profile.UUID;
+                    }
+                    else
+                    {
+                        Console.Write("请输入用户名（离线登录）：");
+                        var userInfo = OfflineAuthenticator.GetUserInfo(Console.ReadLine());
+                        username = userInfo.Username;
+                        accessToken = userInfo.AccessToken;
+                        uuid = userInfo.UUID;
+                    }
                     var gameArguments = new SeaMinecraftLauncherCore.Core.GameArguments
                     {
                         Username = username,
-                        MaxMemory = 1024,
+                        MaxMemory = memory,
                         UUID = uuid,
-                        AccessToken = uuid
+                        AccessToken = accessToken
                     };
                     string script = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GenerateStartScript(verInfo, gameArguments, java);
                     Console.WriteLine(script);
-                    Clipboard.SetDataObject(script);
+                    Clipboard.SetText(script);
                     Console.WriteLine("\n已将此命令复制到剪贴板。");
                     Console.Write("请问是否要启动（Y）：");
                     string input = Console.ReadLine();
@@ -97,7 +124,7 @@ namespace ConsoleApp1
                             StartInfo = startInfo
                         };
                         process.Start();
-                        process.StandardInput.WriteLine("@echo off");
+                        process.StandardInput.WriteLine("chcp 65001");
                         process.StandardInput.WriteLine(script);
                         process.StandardInput.WriteLine("exit");
                         process.WaitForExit();
@@ -127,43 +154,14 @@ SHA1：{library.Download?.Artifact.Size}
 大小（字节）：{library.Download?.Artifact.Size}");
                     }
                 }
-                */
-                MicrosoftAuthenticator microsoftAuthenticator = new MicrosoftAuthenticator();
-                Console.WriteLine("正在进行 OAuth 验证");
-                string code = microsoftAuthenticator.MicrosoftOAuthAuthenticateAsync().Result;
-                Console.WriteLine("正在进行 Token 验证");
-                var token = microsoftAuthenticator.MicrosoftTokenAuthenticateAsync(code).Result;
-                Console.WriteLine("正在进行 XBL 验证");
-                var xblToken = microsoftAuthenticator.XBLAuthenticateAsync(token.Access_Token).Result;
-                Console.WriteLine("正在进行 XSTS 验证");
-                var xstsToken = microsoftAuthenticator.XSTSAuthenticateAsync(xblToken.Token).Result;
-                Console.WriteLine("正在获取 Minecraft Access Token");
-                var minecraftToken = microsoftAuthenticator.MinecraftAuthenticateAsync(xstsToken).Result;
-                Console.WriteLine("正在验证账户所有权");
-                if (microsoftAuthenticator.CheckGameOwnershipAsync(minecraftToken).Result)
-                {
-                    Console.WriteLine("正在获取 Profile");
-                    var profile = microsoftAuthenticator.GetProfileAsync(minecraftToken).Result;
-                    Console.WriteLine($@"
-
-用户名: {profile.Username}
-
-Access Token: {minecraftToken}
-
-UUID: {profile.UUID}");
-                }
-                else
-                {
-                    Console.WriteLine("此账户没有 Minecraft。");
-                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($@"出现错误，错误信息：
 {ex}");
             }
-            Console.WriteLine("\n按下任意键退出...");
-            Console.ReadKey();
+            Console.WriteLine("\n按下回车键退出...");
+            Console.ReadLine();
         }
     }
 }

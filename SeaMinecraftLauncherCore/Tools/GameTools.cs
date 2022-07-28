@@ -290,5 +290,47 @@ namespace SeaMinecraftLauncherCore.Tools
             }
             return result.ToArray();
         }
+
+        /// <summary>
+        /// 转换 Libraries 信息为 DownloadInfo 信息。
+        /// </summary>
+        /// <param name="libraries"></param>
+        /// <returns>转换后的 DownloadInfo 信息。</returns>
+        public static DownloadCore.DownloadInfo[] GetLibrariesDownloadInfos(string minecraftPath, VanillaVersionInfo.LibrariesClass[] libraries)
+        {
+            List<DownloadCore.DownloadInfo> downInfos = new List<DownloadCore.DownloadInfo>();
+            foreach (var library in libraries)
+            {
+                if (library.Rules != null)
+                {
+                    foreach (var rule in library.Rules)
+                    {
+                        if ((rule.Action == "allow" && rule.OS == null) || (rule.Action == "allow" && rule.OS.Name == "windows") || (rule.Action == "disallow" && rule.OS.Name != "windows"))
+                        {
+                            continue;
+                        }
+                        goto SkipLibrary;
+                    }
+                }
+                if (library.Download?.Artifact != null)
+                {
+                    var downInfo = new DownloadCore.DownloadInfo(library.Download.Artifact.URL, Path.Combine(minecraftPath, "libraries", Path.GetDirectoryName(library.Download.Artifact.Path.Replace('/', '\\'))), library.Download.Artifact.SHA1);
+                    downInfos.Add(downInfo);
+                }
+            SkipLibrary:
+                continue;
+            }
+            return downInfos.ToArray();
+        }
+
+        public static DownloadCore.DownloadInfo[] GetAssetsDownloadInfos(string minecraftPath, AssetsIndexInfo assets)
+        {
+            List<DownloadCore.DownloadInfo> downInfos = new List<DownloadCore.DownloadInfo>();
+            foreach (var asset in assets.Assets)
+            {
+                downInfos.Add(new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.Value.SHA1.Substring(0, 2)}/{asset.Value.SHA1}", Path.Combine(minecraftPath, "assets\\objects", asset.Value.SHA1.Substring(0, 2)), asset.Value.SHA1));
+            }
+            return downInfos.ToArray();
+        }
     }
 }

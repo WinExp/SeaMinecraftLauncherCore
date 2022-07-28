@@ -72,22 +72,19 @@ namespace SeaMinecraftLauncherCore.Core
                         }
                     }
                 }
-                if (library.Download != null)
+                if (library.Download?.Artifact != null)
                 {
-                    if (library.Download.Artifact != null)
+                    if (library.Name.Contains("net.minecraftforge") && Version.Parse(versionInfo.Assets) > new Version(1, 13))
                     {
-                        if (library.Name.Contains("net.minecraftforge") && Version.Parse(versionInfo.Assets) > new Version(1, 13))
-                        {
-                            isNewForge = true;
-                        }
-                        string path = Path.Combine(libraryPath, library.Download.Artifact.Path.Replace('/', '\\'));
-                        if (classpath.ToString().Contains(path))
-                        {
-                            goto SkipLibrary;
-                        }
-                        classpath.Append(path);
-                        classpath.Append(';');
+                        isNewForge = true;
                     }
+                    string path = Path.Combine(libraryPath, library.Download.Artifact.Path.Replace('/', '\\'));
+                    if (classpath.ToString().Contains(path))
+                    {
+                        goto SkipLibrary;
+                    }
+                    classpath.Append(path);
+                    classpath.Append(';');
                 }
                 else
                 {
@@ -139,7 +136,8 @@ namespace SeaMinecraftLauncherCore.Core
                 .Replace("${user_type}", "Mojang")
                 .Replace("${version_type}", gameArguments.VersionType);
 
-            return jvmScript.ToString() + gameScript.ToString().Trim(' ');
+            gameScript.Append($"--width {gameArguments.Width} --height {gameArguments.Height}");
+            return jvmScript.ToString() + gameScript.ToString();
         }
     }
 

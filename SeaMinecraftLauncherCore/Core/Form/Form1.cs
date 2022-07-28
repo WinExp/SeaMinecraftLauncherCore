@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace SeaMinecraftLauncherCore
@@ -6,6 +7,7 @@ namespace SeaMinecraftLauncherCore
     internal partial class Form1 : Form
     {
         private string _url;
+        private bool _logged = false;
         internal static string Code;
 
         internal Form1(string url)
@@ -21,10 +23,10 @@ namespace SeaMinecraftLauncherCore
 
         private void webBrowser1_Navigated(object sender, WebBrowserNavigatedEventArgs e)
         {
-            if (e.Url.AbsoluteUri.Contains("http://localhost"))
+            if (e.Url.AbsoluteUri.Contains("https://login.live.com/oauth20_desktop.srf"))
             {
                 Code = e.Url.AbsoluteUri.Remove(0, e.Url.AbsoluteUri.IndexOf("?code=") + 6);
-                webBrowser1.Dispose();
+                _logged = true;
                 this.Close();
             }
         }

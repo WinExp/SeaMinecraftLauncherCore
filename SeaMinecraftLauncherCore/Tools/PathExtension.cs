@@ -1,10 +1,16 @@
-﻿namespace SeaMinecraftLauncherCore.Tools
+﻿using System.Web;
+
+namespace SeaMinecraftLauncherCore.Tools
 {
-    internal static class PathExtension
+    public static class PathExtension
     {
-        internal static string GetMinecraftRootPath(string anyMinecraftPath)
+        public static string GetMinecraftRootPath(string anyMinecraftPath)
+            => anyMinecraftPath.Substring(0, anyMinecraftPath.LastIndexOf(".minecraft") + 10);
+
+        internal static string GetUrlFileName(string url)
         {
-            return anyMinecraftPath.Substring(0, anyMinecraftPath.LastIndexOf(".minecraft") + 10);
+            int idx = url.IndexOf("?");
+            return HttpUtility.UrlDecode((idx >= 0 ? url.Remove(idx) : url).Substring(url.LastIndexOf('/') + 1));
         }
     }
 }

@@ -47,6 +47,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(359, 436);
             this.Controls.Add(this.webBrowser1);
+            this.MaximizeBox = false;
+            this.MaximumSize = new System.Drawing.Size(375, 475);
+            this.MinimumSize = new System.Drawing.Size(375, 475);
             this.Name = "Form1";
             this.Text = "Microsoft 登录";
             this.Load += new System.EventHandler(this.Form1_Load);

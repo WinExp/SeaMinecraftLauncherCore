@@ -7,13 +7,10 @@ using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Core.Model.Authentication.Json
 {
-    public class MicrosoftJson
+    public class MinecraftTokenJson
     {
         [JsonProperty("access_token", Required = Required.Always)]
-        public string Access_Token;
-
-        [JsonProperty("refresh_token", Required = Required.Always)]
-        public string Refresh_Token;
+        public string AccessToken;
 
         [JsonProperty("expires_in", Required = Required.Always)]
         public int Expires;

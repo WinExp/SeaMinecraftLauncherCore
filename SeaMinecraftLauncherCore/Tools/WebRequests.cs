@@ -57,21 +57,5 @@ namespace SeaMinecraftLauncherCore.Tools
                 }
             }
         }
-
-        internal static async Task DownloadFileWithSingleThread(string url, string downloadPath, int timeout = 20000)
-        {
-            using (var response = await GetRequestAsync(url, timeout: timeout))
-            {
-                using (Stream stream = response.GetResponseStream())
-                {
-                    string filePath = Path.Combine(downloadPath, Path.GetFileName(url.Trim()));
-                    filePath = filePath.Remove(filePath.IndexOf('?'));
-                    using (StreamWriter writer = new StreamWriter(filePath))
-                    {
-                        writer.Write(stream);
-                    }
-                }
-            }
-        }
     }
 }
