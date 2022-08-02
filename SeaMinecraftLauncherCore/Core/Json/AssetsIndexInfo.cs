@@ -18,7 +18,7 @@ namespace SeaMinecraftLauncherCore.Core.Json
             public string SHA1;
 
             [JsonProperty("size")]
-            public int Size;
+            public long Size;
 
             public bool Equals(FileClass other)
             {

@@ -14,7 +14,7 @@ namespace TestDownload
             Console.ReadKey();
         }
 
-        static void TestDownload()
+        static async Task TestDownload()
         {
             Console.Write("请输入 .minecraft 路径：");
             string minecraftPath = Console.ReadLine();
@@ -31,7 +31,8 @@ namespace TestDownload
             var verInfo = versions[int.Parse(Console.ReadLine()) - 1];
 
             //var downInfos = SeaMinecraftLauncherCore.Tools.GameTools.GetLibrariesDownloadInfos(minecraftPath, SeaMinecraftLauncherCore.Tools.GameTools.GetMissingLibraries(verInfo, true));
-            var downInfos = SeaMinecraftLauncherCore.Tools.GameTools.GetAssetsDownloadInfos(minecraftPath, SeaMinecraftLauncherCore.Tools.GameTools.GetMissingAssets(verInfo, true));
+            var assets = SeaMinecraftLauncherCore.Tools.GameTools.GetMissingAssets(verInfo);
+            var downInfos = SeaMinecraftLauncherCore.Tools.GameTools.GetAssetsDownloadInfos(minecraftPath, assets);
             DateTime startTime = DateTime.Now;
             int completedCount = 0;
             int failedCount = 0;
@@ -51,25 +52,24 @@ namespace TestDownload
             };
             */
             Console.WriteLine($"开始下载 {downInfos.Length} 个文件");
-            var asyncPool = SeaMinecraftLauncherCore.Tools.DownloadCore.TryDownloadFiles(downInfos, int.MaxValue);
-            while (completedCount < downInfos.Length)
+            var asyncPool = await SeaMinecraftLauncherCore.Tools.DownloadCore.TryDownloadFiles(downInfos);
+            while (asyncPool.Count != 0)
             {
-                for (int i = 0; i < asyncPool.Count; i++)
+                foreach (var task in asyncPool)
                 {
-                    var asyncTask = asyncPool[i];
-                    if (asyncTask.IsCompleted)
+                    if (task.IsCompleted)
                     {
                         completedCount++;
-                        if (asyncTask.IsFaulted)
+                        if (task.IsFaulted)
                         {
+                            Console.WriteLine($"失败，还剩 {downInfos.Length - completedCount} 个");
                             failedCount++;
-                            Console.WriteLine($"下载失败，还剩 {downInfos.Length - completedCount} 个文件");
                         }
                         else
                         {
-                            Console.WriteLine($"下载成功，还剩 {downInfos.Length - completedCount} 个文件");
+                            Console.WriteLine($"成功，还剩 {downInfos.Length - completedCount} 个");
                         }
-                        asyncPool.Remove(asyncTask);
+                        asyncPool.Remove(task);
                         break;
                     }
                 }
