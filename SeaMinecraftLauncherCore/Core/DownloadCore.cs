@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SeaMinecraftLauncherCore.Tools
+namespace SeaMinecraftLauncherCore.Core
 {
     public class DownloadCore
     {
@@ -152,7 +152,7 @@ namespace SeaMinecraftLauncherCore.Tools
                     {
                         File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
                     }
-                    FileSystem.RenameFile(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), fileName);
+                    File.Copy(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), Path.Combine(downInfo.DownloadPath, fileName));
                 }
                 else
                 {

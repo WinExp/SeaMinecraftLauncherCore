@@ -1,12 +1,12 @@
 ﻿using DaanV2.UUID;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SeaMinecraftLauncherCore.Core;
 using SeaMinecraftLauncherCore.Core.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Tools
@@ -340,7 +340,7 @@ namespace SeaMinecraftLauncherCore.Tools
                 }
                 //http://resources.download.minecraft.net/
                 //https://download.mcbbs.net/assets/
-                var addDownInfo = new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
+                var addDownInfo = new DownloadCore.DownloadInfo($"https://download.mcbbs.net/assets/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
                     Path.Combine(minecraftPath, "assets\\objects", asset.SHA1.Substring(0, 2)), asset.SHA1);
                 if (downInfos.Count > 1)
                 {

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TestDownload
@@ -52,7 +49,7 @@ namespace TestDownload
             };
             */
             Console.WriteLine($"开始下载 {downInfos.Length} 个文件");
-            var asyncPool = await SeaMinecraftLauncherCore.Tools.DownloadCore.TryDownloadFiles(downInfos);
+            var asyncPool = await SeaMinecraftLauncherCore.Core.DownloadCore.TryDownloadFiles(downInfos);
             while (asyncPool.Count != 0)
             {
                 foreach (var task in asyncPool)
