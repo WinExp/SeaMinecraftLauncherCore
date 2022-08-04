@@ -59,7 +59,7 @@ namespace TestDownload
                         completedCount++;
                         if (task.IsFaulted)
                         {
-                            Console.WriteLine($"失败，还剩 {downInfos.Length - completedCount} 个");
+                            Console.WriteLine($"失败，还剩 {downInfos.Length - completedCount} 个\n错误：{task.Exception.InnerException.Message}");
                             failedCount++;
                         }
                         else
@@ -73,8 +73,8 @@ namespace TestDownload
             }
             
             Console.WriteLine($"{downInfos.Length} 个文件下载完成，错误 {failedCount} 个，耗时 {(DateTime.Now - startTime).TotalSeconds} 秒");
-            var missingLibraries = SeaMinecraftLauncherCore.Tools.GameTools.GetMissingLibraries(verInfo, true);
-            Console.WriteLine($"Libraries 缺失 {missingLibraries.Length} 个");
+            var missingAssets = SeaMinecraftLauncherCore.Tools.GameTools.GetMissingAssets(verInfo, true);
+            Console.WriteLine($"Assets 缺失 {missingAssets.Assets.Count} 个");
         }
     }
 }

@@ -107,7 +107,7 @@ namespace TestLaunchMinecraft
                     };
                     string script = SeaMinecraftLauncherCore.Core.LaunchMinecraft.GenerateStartScript(verInfo, gameArguments, java);
                     Console.WriteLine(script);
-                    Clipboard.SetText(script);
+                    Clipboard.SetDataObject(script);
                     Console.WriteLine("\n已将此命令复制到剪贴板。");
                     Console.Write("请问是否要启动（Y）：");
                     string input = Console.ReadLine();

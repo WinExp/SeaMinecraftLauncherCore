@@ -28,7 +28,7 @@ namespace SeaMinecraftLauncherCore.Core.Json
         }
 
         [JsonProperty("objects")]
-        public Dictionary<string, FileClass> Assets = new Dictionary<string, FileClass>();
+        public volatile Dictionary<string, FileClass> Assets = new Dictionary<string, FileClass>();
 
         public AssetsIndexInfo Clone()
         {

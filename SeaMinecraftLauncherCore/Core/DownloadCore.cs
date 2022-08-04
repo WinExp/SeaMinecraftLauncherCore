@@ -1,4 +1,5 @@
-﻿using SeaMinecraftLauncherCore.Tools;
+﻿using Microsoft.VisualBasic.FileIO;
+using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -90,75 +91,83 @@ namespace SeaMinecraftLauncherCore.Core
             ServicePointManager.MaxServicePoints = int.MaxValue;
         }
 
-        public static event EventHandler<DownloadSuccessEventArgs> DownloadSuccess;
-
-        public static async Task<List<Task>> TryDownloadFiles(IEnumerable<DownloadInfo> downInfos, int retryCount = int.MaxValue, int threadCount = int.MaxValue, int timeout = 15000)
+        public static async Task TryDownloadFiles(IEnumerable<DownloadInfo> downInfos, int retryCount = 5, int threadCount = int.MaxValue, int timeout = 15000)
         {
-            DownloadSuccess += delegate { };
             List<Task> asyncPool = new List<Task>();
-            int failedCount = 0;
-            int openedThreadCount = 0;
             foreach (DownloadInfo downInfo in downInfos)
             {
                 asyncPool.Add(Task.Run(async () =>
                 {
-                    while (openedThreadCount >= threadCount) { }
-                    openedThreadCount++;
-                    bool result = true;
-                    //Console.WriteLine($"开始下载 {downInfo.Url}");
                     for (int i = 0; i < (retryCount == int.MaxValue ? retryCount : retryCount + 1); i++)
                     {
                         if (await TryDownloadFileAsync(downInfo, timeout))
                         {
-                            goto SkipRetry;
+                            break;
                         }
                     }
-                    failedCount++;
-                    result = false;
-                SkipRetry:
-                    DownloadSuccess(null, new DownloadSuccessEventArgs(downInfo, result));
-                    openedThreadCount--;
                 }));
             }
 
-            //await Task.WhenAll(asyncPool);
-            return asyncPool;
+            await Task.WhenAll(asyncPool);
         }
 
         public static async Task<bool> TryDownloadFileAsync(DownloadInfo downInfo, int timeout = 10000)
         {
-            using (var webClient = new WebClientPlus(timeout))
+            string fileName = PathExtension.GetUrlFileName(downInfo.Url);
+            string fileNameWithOtherExt = fileName + ".sml";
+            try
             {
-                string fileName = PathExtension.GetUrlFileName(downInfo.Url);
-                string fileNameWithOtherExt = Path.GetFileNameWithoutExtension(fileName) + ".SML";
-                if (!Directory.Exists(downInfo.DownloadPath))
+                using (var webClient = new WebClientPlus(timeout))
                 {
-                    Directory.CreateDirectory(downInfo.DownloadPath);
+                    if (!Directory.Exists(downInfo.DownloadPath))
+                    {
+                        Directory.CreateDirectory(downInfo.DownloadPath);
+                    }
+                    else if (File.Exists(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt)))
+                    {
+                        File.Delete(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
+                    }
+                    bool result = false;
+                    webClient.DownloadFileCompleted += (s, e) =>
+                    {
+                        result = e.Error == null ? true : false;
+                    };
+                    var downTask = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
+                    await Task.Delay(timeout);
+                    if (downTask.IsCompleted)
+                    {
+                        if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
+                        {
+                            File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
+                        }
+                        FileSystem.RenameFile(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), fileName);
+                    }
+                    else
+                    {
+                        if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
+                        {
+                            File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
+                        }
+                        if (File.Exists(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt)))
+                        {
+                            File.Delete(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
+                        }
+                        result = false;
+                    }
+                    return result;
                 }
-                else if (File.Exists(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt)))
+            }
+            catch
+            {
+                if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
+                {
+                    File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
+                }
+                if (File.Exists(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt)))
                 {
                     File.Delete(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
                 }
-                bool result = false;
-                webClient.DownloadFileCompleted += (s, e) =>
-                {
-                    result = e.Error == null ? true : false;
-                };
-                var downTask = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
-                await Task.Delay(timeout);
-                if (downTask.IsCompleted)
-                {
-                    if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
-                    {
-                        File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
-                    }
-                    File.Copy(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), Path.Combine(downInfo.DownloadPath, fileName));
-                }
-                else
-                {
-                    result = false;
-                }
-                return result;
+                return false;
             }
         }
     }

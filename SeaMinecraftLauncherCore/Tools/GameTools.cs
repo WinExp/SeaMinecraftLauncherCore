@@ -160,6 +160,10 @@ namespace SeaMinecraftLauncherCore.Tools
             {
                 throw new ArgumentException("Json 文件后缀错误。");
             }
+            if (!File.Exists(assetsJsonPath))
+            {
+                DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(versionInfo.AssetIndex.URL, Path.Combine(minecraftPath, "assets\\indexes"))).Wait();
+            }
             using (StreamReader reader = new StreamReader(assetsJsonPath))
             {
                 string jsonStr = reader.ReadToEnd();
@@ -186,35 +190,35 @@ namespace SeaMinecraftLauncherCore.Tools
             List<Task> asyncPool = new List<Task>();
             foreach (var asset in assets.Assets)
             {
-                try
-                {
-                    string assetPath = Path.Combine(assetsPath, $"objects\\{asset.Value.SHA1.Substring(0, 2)}\\{asset.Value.SHA1}");
-                    bool isHashCorrect = false;
-                    bool isFileExist = false;
-                    if (File.Exists(assetPath))
-                    {
-                        isFileExist = true;
-
-                        if (validHash)
-                        {
-                            string hash = HashTools.GetFileHash(assetPath, "SHA1");
-                            if (hash == asset.Value.SHA1)
-                            {
-                                isHashCorrect = true;
-                            }
-                        }
-                    }
-                    if (!resultAssets.Assets.ContainsValue(asset.Value) && !isFileExist && (!validHash || !isHashCorrect))
-                    {
-                        resultAssets.Assets.Add(asset.Key, asset.Value);
-                    }
-                }
-                catch { }
                 asyncPool.Add(Task.Run(() =>
                 {
+                    try
+                    {
+                        string assetPath = Path.Combine(assetsPath, $"objects\\{asset.Value.SHA1.Substring(0, 2)}\\{asset.Value.SHA1}");
+                        bool isHashCorrect = false;
+                        bool isFileExist = false;
+                        if (File.Exists(assetPath))
+                        {
+                            isFileExist = true;
+
+                            if (validHash)
+                            {
+                                string hash = HashTools.GetFileHash(assetPath, "SHA1");
+                                if (hash == asset.Value.SHA1)
+                                {
+                                    isHashCorrect = true;
+                                }
+                            }
+                        }
+                        if (!resultAssets.Assets.ContainsValue(asset.Value) && !isFileExist && (!validHash || !isHashCorrect))
+                        {
+                            resultAssets.Assets.Add(asset.Key, asset.Value);
+                        }
+                    }
+                    catch { }
                 }));
             }
-            Task.WhenAll(asyncPool).Wait();
+            Task.WaitAll(asyncPool.ToArray());
             return resultAssets;
         }
 
@@ -340,7 +344,7 @@ namespace SeaMinecraftLauncherCore.Tools
                 }
                 //http://resources.download.minecraft.net/
                 //https://download.mcbbs.net/assets/
-                var addDownInfo = new DownloadCore.DownloadInfo($"https://download.mcbbs.net/assets/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
+                var addDownInfo = new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
                     Path.Combine(minecraftPath, "assets\\objects", asset.SHA1.Substring(0, 2)), asset.SHA1);
                 if (downInfos.Count > 1)
                 {
