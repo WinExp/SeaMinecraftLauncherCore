@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
-    public static class GameTools
+    public static class GameHelper
     {
         /// <summary>
         /// 获取服务器上的 Version_Manifest 信息。
@@ -162,7 +162,7 @@ namespace SeaMinecraftLauncherCore.Tools
             }
             if (!File.Exists(assetsJsonPath))
             {
-                DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(versionInfo.AssetIndex.URL, Path.Combine(minecraftPath, "assets\\indexes"))).Wait();
+                DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(versionInfo.AssetIndex.URL.Replace("https://launchermeta.mojang.com/", "https://bmclapi2.bangbang93.com/"), Path.Combine(minecraftPath, "assets\\indexes"))).Wait();
             }
             using (StreamReader reader = new StreamReader(assetsJsonPath))
             {
@@ -173,53 +173,21 @@ namespace SeaMinecraftLauncherCore.Tools
         }
 
         /// <summary>
-        /// 获取缺失 Assets 信息。
+        /// 获取版本需要的 Natives。
         /// </summary>
-        /// <param name="versionInfo"></param>
-        /// <param name="validHash"></param>
-        /// <returns>缺失 Assets 信息。</returns>
-        public static AssetsIndexInfo GetMissingAssets(VanillaVersionInfo versionInfo, bool validHash = false)
+        /// <param name="verInfo"></param>
+        /// <returns>Natives 信息。</returns>
+        public static VanillaVersionInfo.LibrariesClass.LibraryDownload.Download[] GetNatives(VanillaVersionInfo verInfo)
         {
-            string assetsPath = Path.Combine(PathExtension.GetMinecraftRootPath(versionInfo.VersionPath), "assets");
-            var assets = GetAssets(versionInfo);
-            if (!Directory.Exists(assetsPath))
+            List<VanillaVersionInfo.LibrariesClass.LibraryDownload.Download> result = new List<VanillaVersionInfo.LibrariesClass.LibraryDownload.Download>();
+            foreach (var library in verInfo.Libraries)
             {
-                return assets;
-            }
-            var resultAssets = new AssetsIndexInfo();
-            List<Task> asyncPool = new List<Task>();
-            foreach (var asset in assets.Assets)
-            {
-                asyncPool.Add(Task.Run(() =>
+                if (library.Download.Classifiers?.Windows != null)
                 {
-                    try
-                    {
-                        string assetPath = Path.Combine(assetsPath, $"objects\\{asset.Value.SHA1.Substring(0, 2)}\\{asset.Value.SHA1}");
-                        bool isHashCorrect = false;
-                        bool isFileExist = false;
-                        if (File.Exists(assetPath))
-                        {
-                            isFileExist = true;
-
-                            if (validHash)
-                            {
-                                string hash = HashTools.GetFileHash(assetPath, "SHA1");
-                                if (hash == asset.Value.SHA1)
-                                {
-                                    isHashCorrect = true;
-                                }
-                            }
-                        }
-                        if (!resultAssets.Assets.ContainsValue(asset.Value) && !isFileExist && (!validHash || !isHashCorrect))
-                        {
-                            resultAssets.Assets.Add(asset.Key, asset.Value);
-                        }
-                    }
-                    catch { }
-                }));
+                    result.Add(library.Download.Classifiers.Windows);
+                }
             }
-            Task.WaitAll(asyncPool.ToArray());
-            return resultAssets;
+            return result.ToArray();
         }
 
         /// <summary>
@@ -282,7 +250,7 @@ namespace SeaMinecraftLauncherCore.Tools
 
                             if (validHash)
                             {
-                                string hash = HashTools.GetFileHash(libraryPath, "SHA1");
+                                string hash = HashHelper.GetFileHash(libraryPath, "SHA1");
                                 if (hash == library.Download.Artifact.SHA1)
                                 {
                                     isHashCorrect = true;
@@ -298,6 +266,50 @@ namespace SeaMinecraftLauncherCore.Tools
                 catch { }
             }
             return result.ToArray();
+        }
+
+        /// <summary>
+        /// 获取缺失 Assets 信息。
+        /// </summary>
+        /// <param name="versionInfo"></param>
+        /// <param name="validHash"></param>
+        /// <returns>缺失 Assets 信息。</returns>
+        public static AssetsIndexInfo GetMissingAssets(VanillaVersionInfo versionInfo, bool validHash = false)
+        {
+            string assetsPath = Path.Combine(PathExtension.GetMinecraftRootPath(versionInfo.VersionPath), "assets");
+            var assets = GetAssets(versionInfo);
+            if (!Directory.Exists(assetsPath))
+            {
+                return assets;
+            }
+            var resultAssets = new AssetsIndexInfo();
+            foreach (var asset in assets.Assets)
+            {
+                try
+                {
+                    string assetPath = Path.Combine(assetsPath, $"objects\\{asset.Value.SHA1.Substring(0, 2)}\\{asset.Value.SHA1}");
+                    bool isHashCorrect = false;
+                    bool isFileExist = false;
+                    if (File.Exists(assetPath))
+                    {
+                        isFileExist = true;
+                        if (validHash)
+                        {
+                            string hash = HashHelper.GetFileHash(assetPath, "SHA1");
+                            if (hash == asset.Value.SHA1)
+                            {
+                                isHashCorrect = true;
+                            }
+                        }
+                    }
+                    if (!resultAssets.Assets.ContainsValue(asset.Value) && !isFileExist && (!validHash || !isHashCorrect))
+                    {
+                        resultAssets.Assets.Add(asset.Key, asset.Value);
+                    }
+                }
+                catch { }
+            }
+            return resultAssets;
         }
 
         /// <summary>
@@ -343,9 +355,11 @@ namespace SeaMinecraftLauncherCore.Tools
                     continue;
                 }
                 //http://resources.download.minecraft.net/
+                //https://bmclapi2.bangbang93.com/assets/
                 //https://download.mcbbs.net/assets/
-                var addDownInfo = new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
+                var addDownInfo = new DownloadCore.DownloadInfo($"https://download.mcbbs.net/assets/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
                     Path.Combine(minecraftPath, "assets\\objects", asset.SHA1.Substring(0, 2)), asset.SHA1);
+                /*
                 if (downInfos.Count > 1)
                 {
                     long size = downInfoSizes.Max();
@@ -357,6 +371,7 @@ namespace SeaMinecraftLauncherCore.Tools
                         continue;
                     }
                 }
+                */
                 downInfos.Add(addDownInfo);
                 downInfoSizes.Add(asset.Size);
             }

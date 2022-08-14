@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
-    internal static class FileTools
+    internal static class FileHelper
     {
         internal static FileInfo[] SearchFile(string searchPath, string fileName)
         {
@@ -43,11 +43,11 @@ namespace SeaMinecraftLauncherCore.Tools
 
         internal static async Task<string> GetLocalVersion(string sha1)
         {
-            VersionManifest versionManifest = await GameTools.GetWebVersionInfo();
+            VersionManifest versionManifest = await GameHelper.GetWebVersionInfo();
             foreach (var ver in versionManifest.Versions)
             {
                 string verStr = await WebRequests.GetStringAsync(ver.Url);
-                var verInfo = GameTools.GetVanillaVersionInfoWithJsonString(verStr);
+                var verInfo = GameHelper.GetVanillaVersionInfoWithJsonString(verStr);
                 if (verInfo.Downloads.Client.SHA1.Equals(sha1, StringComparison.OrdinalIgnoreCase))
                 {
                     return verInfo.ID;

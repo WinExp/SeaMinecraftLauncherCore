@@ -11,7 +11,7 @@ namespace SeaMinecraftLauncherCore.Core.Model.Authentication
     {
         public static OfflineUserInfo GetUserInfo(string username)
         {
-            string uuid = GameTools.GenerateOfflineUUID(username);
+            string uuid = GameHelper.GenerateOfflineUUID(username);
             OfflineUserInfo userInfo = new OfflineUserInfo
             {
                 Username = username,

@@ -35,10 +35,10 @@ namespace TestLaunchMinecraft
 ");
             try
             {
-                var javaInfos = JavaTools.FindJava();
+                var javaInfos = JavaHelper.FindJava();
                 Console.Write("请输入 .minecraft 路径：");
                 string minecraftPath = Console.ReadLine();
-                var versions = GameTools.FindVersion(minecraftPath);
+                var versions = GameHelper.FindVersion(minecraftPath);
                 Console.WriteLine("版本信息：");
                 for (int i = 1; i < versions.Length + 1; i++)
                 {
@@ -53,7 +53,7 @@ namespace TestLaunchMinecraft
                 string testFunction = Console.ReadLine();
                 if (testFunction == "1")
                 {
-                    var java = JavaTools.AutoSelectJava(verInfo, javaInfos);
+                    var java = JavaHelper.AutoSelectJava(verInfo, javaInfos);
                     Console.WriteLine("\nJava 信息：");
                     for (int i = 1; i < javaInfos.Length + 1; i++)
                     {
@@ -133,7 +133,7 @@ namespace TestLaunchMinecraft
                 }
                 else if (testFunction == "2")
                 {
-                    var assets = GameTools.GetMissingAssets(verInfo);
+                    var assets = GameHelper.GetMissingAssets(verInfo);
                     Console.WriteLine("以下是缺失 Assets 信息：");
                     foreach (var asset in assets.Assets)
                     {
@@ -144,7 +144,7 @@ SHA1：{asset.Value.SHA1}
                 }
                 else if (testFunction == "3")
                 {
-                    var libraries = GameTools.GetMissingLibraries(verInfo);
+                    var libraries = GameHelper.GetMissingLibraries(verInfo);
                     Console.WriteLine("以下是缺失 Libraries 信息：");
                     foreach (var library in libraries)
                     {

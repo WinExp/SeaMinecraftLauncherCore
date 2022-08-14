@@ -3,7 +3,7 @@ using System;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
-    public static class SystemTools
+    public static class SystemHelper
     {
         public static double GetSystemTotalMemory()
         {

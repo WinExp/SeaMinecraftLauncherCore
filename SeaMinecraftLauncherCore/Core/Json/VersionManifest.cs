@@ -17,18 +17,6 @@ namespace SeaMinecraftLauncherCore.Core.Json
         [JsonProperty("versions")]
         public WebVersionInfo[] Versions;
 
-        public WebVersionInfo FindLatestVersion(string latest)
-        {
-            foreach (var version in Versions)
-            {
-                if (version.Type == latest)
-                {
-                    return version;
-                }
-            }
-            throw new NotImplementedException($"Latest \"{latest}\" not found.");
-        }
-
         public WebVersionInfo FindVersion(string version)
         {
             foreach (var version_ in Versions)

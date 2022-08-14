@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
-    internal static class HashTools
+    internal static class HashHelper
     {
         internal static string GetFileHash(string filePath, string algorithm)
         {

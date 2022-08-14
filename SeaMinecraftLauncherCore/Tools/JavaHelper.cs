@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace SeaMinecraftLauncherCore.Tools
 {
-    public static class JavaTools
+    public static class JavaHelper
     {
         /// <summary>
         /// 寻找计算机中的 Java。
@@ -81,7 +81,7 @@ namespace SeaMinecraftLauncherCore.Tools
                     {
                         try
                         {
-                            foreach (var java in FileTools.SearchFile(Path.Combine(disk, name), "java.exe"))
+                            foreach (var java in FileHelper.SearchFile(Path.Combine(disk, name), "java.exe"))
                             {
                                 try
                                 {

@@ -15,7 +15,7 @@ namespace TestDownload
         {
             Console.Write("请输入 .minecraft 路径：");
             string minecraftPath = Console.ReadLine();
-            var versions = SeaMinecraftLauncherCore.Tools.GameTools.FindVersion(minecraftPath);
+            var versions = SeaMinecraftLauncherCore.Tools.GameHelper.FindVersion(minecraftPath);
             Console.WriteLine("版本信息：");
             for (int i = 1; i < versions.Length + 1; i++)
             {
@@ -27,12 +27,7 @@ namespace TestDownload
             Console.Write("\n请选择版本序号：");
             var verInfo = versions[int.Parse(Console.ReadLine()) - 1];
 
-            //var downInfos = SeaMinecraftLauncherCore.Tools.GameTools.GetLibrariesDownloadInfos(minecraftPath, SeaMinecraftLauncherCore.Tools.GameTools.GetMissingLibraries(verInfo, true));
-            var assets = SeaMinecraftLauncherCore.Tools.GameTools.GetMissingAssets(verInfo);
-            var downInfos = SeaMinecraftLauncherCore.Tools.GameTools.GetAssetsDownloadInfos(minecraftPath, assets);
             DateTime startTime = DateTime.Now;
-            int completedCount = 0;
-            int failedCount = 0;
             /*
             SeaMinecraftLauncherCore.Tools.DownloadCore.DownloadSuccess += (s, e) =>
             {
@@ -48,32 +43,24 @@ namespace TestDownload
                 }
             };
             */
-            Console.WriteLine($"开始下载 {downInfos.Length} 个文件");
-            var asyncPool = await SeaMinecraftLauncherCore.Core.DownloadCore.TryDownloadFiles(downInfos);
-            while (asyncPool.Count != 0)
+            var progress = SeaMinecraftLauncherCore.Core.Installer.VanillaInstaller.CompleteAssets(verInfo);
+            Console.WriteLine($"开始下载 {progress.Length} 个文件");
+            //int completedCount = 0;
+            while (progress.DownloadProgress.CompletedCount < progress.Length)
             {
-                foreach (var task in asyncPool)
+                /*
+                if (completedCount < progress.DownloadProgress.CompletedCount)
                 {
-                    if (task.IsCompleted)
-                    {
-                        completedCount++;
-                        if (task.IsFaulted)
-                        {
-                            Console.WriteLine($"失败，还剩 {downInfos.Length - completedCount} 个\n错误：{task.Exception.InnerException.Message}");
-                            failedCount++;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"成功，还剩 {downInfos.Length - completedCount} 个");
-                        }
-                        asyncPool.Remove(task);
-                        break;
-                    }
+                    completedCount = progress.DownloadProgress.CompletedCount;
+                    Console.WriteLine($"下载完成，还剩 {progress.Length - progress.DownloadProgress.CompletedCount} 个，目前错误 {progress.DownloadProgress.FailedCount} 个");
                 }
+                */
+                Console.WriteLine($"还剩 {progress.Length - progress.DownloadProgress.CompletedCount} 个，目前错误 {progress.DownloadProgress.FailedCount} 个");
+                await Task.Delay(1000);
             }
-            
-            Console.WriteLine($"{downInfos.Length} 个文件下载完成，错误 {failedCount} 个，耗时 {(DateTime.Now - startTime).TotalSeconds} 秒");
-            var missingAssets = SeaMinecraftLauncherCore.Tools.GameTools.GetMissingAssets(verInfo, true);
+
+            Console.WriteLine($"{progress.Length} 个文件下载完成，错误 {progress.DownloadProgress.FailedCount} 个，耗时 {(DateTime.Now - startTime).TotalSeconds} 秒");
+            var missingAssets = SeaMinecraftLauncherCore.Tools.GameHelper.GetMissingAssets(verInfo, true);
             Console.WriteLine($"Assets 缺失 {missingAssets.Assets.Count} 个");
         }
     }

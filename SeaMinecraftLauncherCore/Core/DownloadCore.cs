@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic.FileIO;
-using SeaMinecraftLauncherCore.Tools;
+﻿using SeaMinecraftLauncherCore.Tools;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,17 +71,10 @@ namespace SeaMinecraftLauncherCore.Core
             }
         }
 
-        public class DownloadSuccessEventArgs : EventArgs
+        public class DownloadProgress
         {
-            public DownloadInfo DownloadInfo { get; internal set; }
-
-            public bool Success { get; internal set; }
-
-            public DownloadSuccessEventArgs(DownloadInfo downloadInfo, bool success)
-            {
-                DownloadInfo = downloadInfo;
-                Success = success;
-            }
+            public volatile int CompletedCount;
+            public volatile int FailedCount;
         }
 
         static DownloadCore()
@@ -91,24 +83,33 @@ namespace SeaMinecraftLauncherCore.Core
             ServicePointManager.MaxServicePoints = int.MaxValue;
         }
 
-        public static async Task TryDownloadFiles(IEnumerable<DownloadInfo> downInfos, int retryCount = 5, int threadCount = int.MaxValue, int timeout = 15000)
+        public static DownloadProgress TryDownloadFiles(IEnumerable<DownloadInfo> downInfos, int retryCount = 2, int timeout = 20000)
         {
+            DownloadProgress progress = new DownloadProgress();
             List<Task> asyncPool = new List<Task>();
             foreach (DownloadInfo downInfo in downInfos)
             {
                 asyncPool.Add(Task.Run(async () =>
                 {
+                    bool isSuccess = false;
                     for (int i = 0; i < (retryCount == int.MaxValue ? retryCount : retryCount + 1); i++)
                     {
                         if (await TryDownloadFileAsync(downInfo, timeout))
                         {
+                            isSuccess = true;
                             break;
                         }
+                    }
+                    progress.CompletedCount++;
+                    if (!isSuccess)
+                    {
+                        progress.FailedCount++;
                     }
                 }));
             }
 
-            await Task.WhenAll(asyncPool);
+            //await Task.WhenAll(asyncPool);
+            return progress;
         }
 
         public static async Task<bool> TryDownloadFileAsync(DownloadInfo downInfo, int timeout = 10000)
@@ -123,36 +124,31 @@ namespace SeaMinecraftLauncherCore.Core
                     {
                         Directory.CreateDirectory(downInfo.DownloadPath);
                     }
-                    else if (File.Exists(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt)))
-                    {
-                        File.Delete(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
-                    }
                     bool result = false;
                     webClient.DownloadFileCompleted += (s, e) =>
                     {
                         result = e.Error == null ? true : false;
                     };
-                    var downTask = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
+                    var task = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
                     await Task.Delay(timeout);
-                    if (downTask.IsCompleted)
+                    if (task.IsCompleted)
                     {
-                        if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
+                        if (result)
                         {
-                            File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
+                            if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
+                            {
+                                File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
+                            }
+                            File.Move(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), Path.Combine(downInfo.DownloadPath, fileName));
                         }
-                        FileSystem.RenameFile(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), fileName);
                     }
                     else
                     {
-                        if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
-                        {
-                            File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
-                        }
+                        webClient.CancelAsync();
                         if (File.Exists(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt)))
                         {
                             File.Delete(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
                         }
-                        result = false;
                     }
                     return result;
                 }
