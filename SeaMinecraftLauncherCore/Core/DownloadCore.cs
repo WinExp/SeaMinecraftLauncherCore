@@ -73,8 +73,43 @@ namespace SeaMinecraftLauncherCore.Core
 
         public class DownloadProgress
         {
-            public volatile int CompletedCount;
-            public volatile int FailedCount;
+            public int CompletedCount;
+            public int FailedCount;
+            public int TotalCount;
+
+            internal void StartCount(List<Task> asyncPool)
+            {
+                Task.Run(() =>
+                {
+                    while (true)
+                    {
+                        int completedCount = 0;
+                        int failedCount = 0;
+                        for (int i = 0; i < asyncPool.Count; i++)
+                        {
+                            Task task = asyncPool[i];
+                            if (task == null)
+                            {
+                                continue;
+                            }
+                            if (task.IsCompleted)
+                            {
+                                completedCount++;
+                            }
+                            if (task.IsFaulted)
+                            {
+                                failedCount++;
+                            }
+                        }
+                        CompletedCount = completedCount;
+                        FailedCount = failedCount;
+                        if (completedCount == asyncPool.Count)
+                        {
+                            break;
+                        }
+                    }
+                });
+            }
         }
 
         static DownloadCore()
@@ -87,24 +122,23 @@ namespace SeaMinecraftLauncherCore.Core
         {
             DownloadProgress progress = new DownloadProgress();
             List<Task> asyncPool = new List<Task>();
+            progress.TotalCount = downInfos.Count();
+            progress.StartCount(asyncPool);
+            int openedThreadCount = 0;
             foreach (DownloadInfo downInfo in downInfos)
             {
                 asyncPool.Add(Task.Run(async () =>
                 {
-                    bool isSuccess = false;
+                    while (openedThreadCount >= 64) ;
+                    openedThreadCount++;
                     for (int i = 0; i < (retryCount == int.MaxValue ? retryCount : retryCount + 1); i++)
                     {
                         if (await TryDownloadFileAsync(downInfo, timeout))
                         {
-                            isSuccess = true;
                             break;
                         }
                     }
-                    progress.CompletedCount++;
-                    if (!isSuccess)
-                    {
-                        progress.FailedCount++;
-                    }
+                    openedThreadCount--;
                 }));
             }
 
@@ -130,6 +164,16 @@ namespace SeaMinecraftLauncherCore.Core
                         result = e.Error == null ? true : false;
                     };
                     var task = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
+                    await task;
+                    if (result)
+                    {
+                        if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))
+                        {
+                            File.Delete(Path.Combine(downInfo.DownloadPath, fileName));
+                        }
+                        File.Move(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt), Path.Combine(downInfo.DownloadPath, fileName));
+                    }
+                    /*
                     await Task.Delay(timeout);
                     if (task.IsCompleted)
                     {
@@ -150,6 +194,7 @@ namespace SeaMinecraftLauncherCore.Core
                             File.Delete(Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
                         }
                     }
+                    */
                     return result;
                 }
             }

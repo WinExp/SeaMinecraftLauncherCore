@@ -32,10 +32,14 @@ namespace SeaMinecraftLauncherCore.Core.Installer
                     }
                     Json.VanillaVersionInfo verInfo = Tools.GameHelper.GetVanillaVersionInfo(Path.Combine(verPath, installName + ".json"));
                     result.Progress = InstallProgress.ProgressEnum.Downloading_Client;
-                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(verInfo.Downloads.Client.URL, verPath)))
+                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(verInfo.Downloads.Client.URL.Replace("https://launchermeta.mojang.com", "https://bmclapi2.bangbang93.com").Replace("https://launcher.mojang.com", "https://bmclapi2.bangbang93.com"), verPath)))
                     {
                         result.IsSuccess = false;
                         return;
+                    }
+                    if (File.Exists(Path.Combine(verPath, installName + ".jar")))
+                    {
+                        File.Delete(Path.Combine(verPath, installName + ".jar"));
                     }
                     File.Move(Path.Combine(verPath, "client.jar"), Path.Combine(verPath, installName + ".jar"));
                     result.Progress = InstallProgress.ProgressEnum.Completing_Libraries;

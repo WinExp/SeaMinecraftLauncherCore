@@ -15,7 +15,7 @@ namespace TestDownload
         {
             Console.Write("请输入 .minecraft 路径：");
             string minecraftPath = Console.ReadLine();
-            var versions = SeaMinecraftLauncherCore.Tools.GameHelper.FindVersion(minecraftPath);
+            var versions = SeaMinecraftLauncherCore.Tools.GameHelper.FindVersions(minecraftPath);
             Console.WriteLine("版本信息：");
             for (int i = 1; i < versions.Length + 1; i++)
             {
@@ -45,18 +45,18 @@ namespace TestDownload
             */
             var progress = SeaMinecraftLauncherCore.Core.Installer.VanillaInstaller.CompleteAssets(verInfo);
             Console.WriteLine($"开始下载 {progress.Length} 个文件");
-            //int completedCount = 0;
+            int completedCount = 0;
             while (progress.DownloadProgress.CompletedCount < progress.Length)
             {
-                /*
                 if (completedCount < progress.DownloadProgress.CompletedCount)
                 {
                     completedCount = progress.DownloadProgress.CompletedCount;
                     Console.WriteLine($"下载完成，还剩 {progress.Length - progress.DownloadProgress.CompletedCount} 个，目前错误 {progress.DownloadProgress.FailedCount} 个");
                 }
-                */
+                /*
                 Console.WriteLine($"还剩 {progress.Length - progress.DownloadProgress.CompletedCount} 个，目前错误 {progress.DownloadProgress.FailedCount} 个");
                 await Task.Delay(1000);
+                */
             }
 
             Console.WriteLine($"{progress.Length} 个文件下载完成，错误 {progress.DownloadProgress.FailedCount} 个，耗时 {(DateTime.Now - startTime).TotalSeconds} 秒");

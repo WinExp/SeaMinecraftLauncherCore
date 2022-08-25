@@ -38,7 +38,7 @@ namespace SeaMinecraftLauncherCore.Tools
         /// </summary>
         /// <param name="minecraftPath"></param>
         /// <returns>查找到的 Minecraft 版本。</returns>
-        public static VanillaVersionInfo[] FindVersion(string minecraftPath)
+        public static VanillaVersionInfo[] FindVersions(string minecraftPath)
         {
             if (string.IsNullOrWhiteSpace(minecraftPath))
             {
@@ -335,7 +335,7 @@ namespace SeaMinecraftLauncherCore.Tools
                 }
                 if (library.Download?.Artifact != null)
                 {
-                    var downInfo = new DownloadCore.DownloadInfo(library.Download.Artifact.URL, Path.Combine(minecraftPath, "libraries", Path.GetDirectoryName(library.Download.Artifact.Path.Replace('/', '\\'))), library.Download.Artifact.SHA1);
+                    var downInfo = new DownloadCore.DownloadInfo(library.Download.Artifact.URL.Replace("https://libraries.minecraft.net", "https://download.mcbbs.net/maven"), Path.Combine(minecraftPath, "libraries", Path.GetDirectoryName(library.Download.Artifact.Path.Replace('/', '\\'))), library.Download.Artifact.SHA1);
                     downInfos.Add(downInfo);
                 }
             SkipLibrary:
@@ -357,9 +357,8 @@ namespace SeaMinecraftLauncherCore.Tools
                 //http://resources.download.minecraft.net/
                 //https://bmclapi2.bangbang93.com/assets/
                 //https://download.mcbbs.net/assets/
-                var addDownInfo = new DownloadCore.DownloadInfo($"https://download.mcbbs.net/assets/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
+                var addDownInfo = new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
                     Path.Combine(minecraftPath, "assets\\objects", asset.SHA1.Substring(0, 2)), asset.SHA1);
-                /*
                 if (downInfos.Count > 1)
                 {
                     long size = downInfoSizes.Max();
@@ -371,7 +370,6 @@ namespace SeaMinecraftLauncherCore.Tools
                         continue;
                     }
                 }
-                */
                 downInfos.Add(addDownInfo);
                 downInfoSizes.Add(asset.Size);
             }

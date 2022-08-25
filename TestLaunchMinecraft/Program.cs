@@ -38,7 +38,7 @@ namespace TestLaunchMinecraft
                 var javaInfos = JavaHelper.FindJava();
                 Console.Write("请输入 .minecraft 路径：");
                 string minecraftPath = Console.ReadLine();
-                var versions = GameHelper.FindVersion(minecraftPath);
+                var versions = GameHelper.FindVersions(minecraftPath);
                 Console.WriteLine("版本信息：");
                 for (int i = 1; i < versions.Length + 1; i++)
                 {

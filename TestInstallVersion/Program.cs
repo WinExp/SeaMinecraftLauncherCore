@@ -41,9 +41,37 @@ namespace TestInstallVersion
                             break;
                         case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_Libraries:
                             Console.WriteLine($"安装进度：正在补全 Libraries");
+                            /*
+                            int completedCount = 0;
+                            while (progress.LibrariesCompleteProgress == null) ;
+                            while (progress.LibrariesCompleteProgress.DownloadProgress.CompletedCount != progress.LibrariesCompleteProgress.Length)
+                            {
+                                if (progress.LibrariesCompleteProgress.DownloadProgress.CompletedCount != completedCount)
+                                {
+                                    completedCount = progress.LibrariesCompleteProgress.DownloadProgress.CompletedCount;
+                                    Console.WriteLine($"下载完成，还剩 {progress.LibrariesCompleteProgress.Length - progress.LibrariesCompleteProgress.DownloadProgress.CompletedCount} 个，错误 {progress.LibrariesCompleteProgress.DownloadProgress.FailedCount} 个");
+                                }
+                            }
+                            */
                             break;
                         case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_Assets:
                             Console.WriteLine($"安装进度：正在补全 Assets");
+                            /*
+                            completedCount = 0;
+                            while (progress.AssetsCompleteProgress == null) ;
+                            while (progress.AssetsCompleteProgress.DownloadProgress.CompletedCount != progress.AssetsCompleteProgress.Length)
+                            {
+                                if (progress.AssetsCompleteProgress == null)
+                                {
+                                    continue;
+                                }
+                                if (progress.AssetsCompleteProgress.DownloadProgress.CompletedCount != completedCount)
+                                {
+                                    completedCount = progress.AssetsCompleteProgress.DownloadProgress.CompletedCount;
+                                    Console.WriteLine($"下载完成，还剩 {progress.AssetsCompleteProgress.Length - progress.AssetsCompleteProgress.DownloadProgress.CompletedCount} 个，错误 {progress.AssetsCompleteProgress.DownloadProgress.FailedCount} 个");
+                                }
+                            }
+                            */
                             break;
                         case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_Natives:
                             Console.WriteLine("安装进度：正在补全 Natives");
