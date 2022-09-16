@@ -53,6 +53,7 @@ namespace TestDownload
                     completedCount = progress.DownloadProgress.CompletedCount;
                     Console.WriteLine($"下载完成，还剩 {progress.Length - progress.DownloadProgress.CompletedCount} 个，目前错误 {progress.DownloadProgress.FailedCount} 个");
                 }
+                await Task.Delay(100);
                 /*
                 Console.WriteLine($"还剩 {progress.Length - progress.DownloadProgress.CompletedCount} 个，目前错误 {progress.DownloadProgress.FailedCount} 个");
                 await Task.Delay(1000);

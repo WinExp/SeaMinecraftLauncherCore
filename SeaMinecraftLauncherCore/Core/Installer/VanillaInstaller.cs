@@ -67,7 +67,7 @@ namespace SeaMinecraftLauncherCore.Core.Installer
             string minecraftPath = Tools.PathExtension.GetMinecraftRootPath(verInfo.VersionPath);
             var assets = Tools.GameHelper.GetMissingAssets(verInfo, true);
             var downInfos = Tools.GameHelper.GetAssetsDownloadInfos(minecraftPath, assets);
-            var downProgress = DownloadCore.TryDownloadFiles(downInfos, 2, 15000);
+            var downProgress = DownloadCore.TryDownloadFiles(downInfos, 2, 20000);
             return new InstallProgress.CompleteProgress(downInfos.Length, downProgress);
         }
 
