@@ -19,7 +19,15 @@ namespace TestInstallVersion
             var minecraftList = await SeaMinecraftLauncherCore.Tools.GameHelper.GetWebVersionInfo();
             Console.Write("请输入需要安装的版本：");
             string installVersionStr = Console.ReadLine();
-            var installVersion = minecraftList.FindVersion(installVersionStr);
+            SeaMinecraftLauncherCore.Core.Json.WebVersionInfo installVersion = null;
+            try
+            {
+                installVersion = minecraftList.FindVersion(installVersionStr);
+            }
+            catch (NotImplementedException)
+            {
+                Console.WriteLine("未找到版本");
+            }
             Console.Write("请输入安装路径：");
             string minecraftPath = Console.ReadLine();
             var installer = new SeaMinecraftLauncherCore.Core.Installer.VanillaInstaller(minecraftPath);

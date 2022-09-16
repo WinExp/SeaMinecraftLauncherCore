@@ -150,7 +150,7 @@ namespace SeaMinecraftLauncherCore.Core
             return progress;
         }
 
-        public static async Task<bool> TryDownloadFileAsync(DownloadInfo downInfo, int timeout = 10000)
+        public static async Task<bool> TryDownloadFileAsync(DownloadInfo downInfo, int timeout = 20000)
         {
             string fileName = PathExtension.GetUrlFileName(downInfo.Url);
             string fileNameWithOtherExt = fileName + ".sml";
@@ -168,7 +168,15 @@ namespace SeaMinecraftLauncherCore.Core
                         result = e.Error == null ? true : false;
                     };
                     var task = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
-                    await Task.Delay(20000);
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(timeout);
+                        if (!task.IsCompleted)
+                        {
+                            webClient.CancelAsync();
+                        }
+                    });
+                    await task;
                     if (result)
                     {
                         if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))

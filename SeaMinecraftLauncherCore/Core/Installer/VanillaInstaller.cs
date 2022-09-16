@@ -50,7 +50,10 @@ namespace SeaMinecraftLauncherCore.Core.Installer
                     assets.Wait();
                     result.Progress = InstallProgress.ProgressEnum.Completing_Natives;
                     var natives = CompleteNatives(verInfo);
-                    natives.Wait();
+                    if (natives != null)
+                    {
+                        natives.Wait();
+                    }
                     result.IsSuccess = true;
                 }
                 catch
@@ -80,9 +83,13 @@ namespace SeaMinecraftLauncherCore.Core.Installer
             return new InstallProgress.CompleteProgress(downInfos.Length, downProgress);
         }
 
-        public static InstallProgress.CompleteProgress CompleteNatives(Json.VanillaVersionInfo verInfo)
+        public static InstallProgress.CompleteProgress? CompleteNatives(Json.VanillaVersionInfo verInfo)
         {
             var natives = Tools.GameHelper.GetNatives(verInfo);
+            if (natives.Length == 0)
+            {
+                return null;
+            }
             string path = Path.Combine(Path.GetTempPath(), "SMLCore");
             var downInfos = new List<DownloadCore.DownloadInfo>();
             foreach (var native in natives)
@@ -93,15 +100,20 @@ namespace SeaMinecraftLauncherCore.Core.Installer
             var result = new DownloadCore.DownloadProgress();
             Task.Run(() =>
             {
-                while (downProgress.CompletedCount < downInfos.Count) ;
-                foreach (var downInfo in downInfos)
+                while (downProgress.CompletedCount < downInfos.Count)
                 {
-                    string fileName = Path.Combine(downInfo.DownloadPath, Tools.PathExtension.GetUrlFileName(downInfo.Url));
-                    if (Tools.ZipHelper.UnzipFile(fileName, Path.Combine(verInfo.VersionPath, verInfo.ID + "-natives")) != 0)
+                    foreach (var downInfo in downInfos)
                     {
-                        result.FailedCount++;
+                        string fileName = Path.Combine(downInfo.DownloadPath, Tools.PathExtension.GetUrlFileName(downInfo.Url));
+                        if (File.Exists(fileName))
+                        {
+                            if (Tools.ZipHelper.UnzipFile(fileName, Path.Combine(verInfo.VersionPath, verInfo.ID + "-natives")) != 0)
+                            {
+                                result.FailedCount++;
+                            }
+                            result.CompletedCount++;
+                        }
                     }
-                    result.CompletedCount++;
                 }
                 Directory.Delete(path, true);
             });
@@ -113,7 +125,7 @@ namespace SeaMinecraftLauncherCore.Core.Installer
     {
         public CompleteProgress LibrariesCompleteProgress { get; internal set; }
         public CompleteProgress AssetsCompleteProgress { get; internal set; }
-        public CompleteProgress NativesCompletedProgress { get; internal set; }
+        public CompleteProgress NativesCompleteProgress { get; internal set; }
         public bool IsCompleted { get; internal set; } = false;
         public bool IsSuccess { get; internal set; } = false;
         public ProgressEnum Progress { get; internal set; } = ProgressEnum.Downloading_Json;

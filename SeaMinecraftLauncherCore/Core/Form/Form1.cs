@@ -7,7 +7,6 @@ namespace SeaMinecraftLauncherCore
     internal partial class Form1 : Form
     {
         private string _url;
-        private bool _logged = false;
         internal static string Code;
 
         internal Form1(string url)
@@ -26,7 +25,6 @@ namespace SeaMinecraftLauncherCore
             if (e.Url.AbsoluteUri.Contains("https://login.live.com/oauth20_desktop.srf"))
             {
                 Code = e.Url.AbsoluteUri.Remove(0, e.Url.AbsoluteUri.IndexOf("?code=") + 6);
-                _logged = true;
                 this.Close();
             }
         }

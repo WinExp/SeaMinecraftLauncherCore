@@ -26,7 +26,7 @@ namespace SeaMinecraftLauncherCore.Core.Json
                     return version_;
                 }
             }
-            throw new NotImplementedException($"Version {version} not found.");
+            throw new NotImplementedException($"无法从在线版本信息中查找到 {version}。");
         }
     }
 }
