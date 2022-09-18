@@ -356,7 +356,7 @@ namespace SeaMinecraftLauncherCore.Tools
                 //http://resources.download.minecraft.net/
                 //https://bmclapi2.bangbang93.com/assets/
                 //https://download.mcbbs.net/assets/
-                var addDownInfo = new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
+                var addDownInfo = new DownloadCore.DownloadInfo($"https://download.mcbbs.net/assets/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
                     Path.Combine(minecraftPath, "assets\\objects", asset.SHA1.Substring(0, 2)), asset.SHA1);
                 downInfos.Add(addDownInfo);
             }

@@ -25,14 +25,14 @@ namespace SeaMinecraftLauncherCore.Core.Installer
                 try
                 {
                     string verPath = Path.Combine(_path, "versions", installName);
-                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(webVersion.Url, verPath)))
+                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(webVersion.Url.Replace("https://piston-meta.mojang.com", "https://download.mcbbs.net"), verPath)))
                     {
                         result.IsSuccess = false;
                         return;
                     }
                     Json.VanillaVersionInfo verInfo = Tools.GameHelper.GetVanillaVersionInfo(Path.Combine(verPath, installName + ".json"));
                     result.Progress = InstallProgress.ProgressEnum.Downloading_Client;
-                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(verInfo.Downloads.Client.URL.Replace("https://launchermeta.mojang.com", "https://download.mcbbs.net").Replace("https://launcher.mojang.com", "https://download.mcbbs.net"), verPath), 30000))
+                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(verInfo.Downloads.Client.URL.Replace("https://piston-meta.mojang.com", "https://download.mcbbs.net").Replace("https://launcher.mojang.com", "https://download.mcbbs.net"), verPath), 30000))
                     {
                         result.IsSuccess = false;
                         return;
