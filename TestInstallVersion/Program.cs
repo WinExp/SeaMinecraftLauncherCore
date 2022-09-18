@@ -27,6 +27,7 @@ namespace TestInstallVersion
             catch (NotImplementedException)
             {
                 Console.WriteLine("未找到版本");
+                return;
             }
             Console.Write("请输入安装路径：");
             string minecraftPath = Console.ReadLine();

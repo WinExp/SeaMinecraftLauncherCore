@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SeaMinecraftLauncherCore.Core
@@ -168,15 +169,17 @@ namespace SeaMinecraftLauncherCore.Core
                         result = e.Error == null ? true : false;
                     };
                     var task = webClient.DownloadFileTaskAsync(downInfo.Url, Path.Combine(downInfo.DownloadPath, fileNameWithOtherExt));
+                    CancellationTokenSource tokenSource = new CancellationTokenSource();
                     Task.Run(async () =>
                     {
-                        await Task.Delay(timeout);
+                        await Task.Delay(timeout, tokenSource.Token);
                         if (!task.IsCompleted)
                         {
                             webClient.CancelAsync();
                         }
                     });
                     await task;
+                    tokenSource.Cancel();
                     if (result)
                     {
                         if (File.Exists(Path.Combine(downInfo.DownloadPath, fileName)))

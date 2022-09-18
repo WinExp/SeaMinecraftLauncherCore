@@ -347,7 +347,6 @@ namespace SeaMinecraftLauncherCore.Tools
         public static DownloadCore.DownloadInfo[] GetAssetsDownloadInfos(string minecraftPath, AssetsIndexInfo assets)
         {
             List<DownloadCore.DownloadInfo> downInfos = new List<DownloadCore.DownloadInfo>();
-            List<long> downInfoSizes = new List<long>();
             foreach (var asset in assets.Assets.Values)
             {
                 if (asset == null)
@@ -359,21 +358,7 @@ namespace SeaMinecraftLauncherCore.Tools
                 //https://download.mcbbs.net/assets/
                 var addDownInfo = new DownloadCore.DownloadInfo($"http://resources.download.minecraft.net/{asset.SHA1.Substring(0, 2)}/{asset.SHA1}",
                     Path.Combine(minecraftPath, "assets\\objects", asset.SHA1.Substring(0, 2)), asset.SHA1);
-                /*
-                if (downInfos.Count > 1)
-                {
-                    long size = downInfoSizes.Max();
-                    if (asset.Size >= size)
-                    {
-                        int idx = downInfoSizes.IndexOf(size);
-                        downInfos.Insert(idx, addDownInfo);
-                        downInfoSizes.Insert(idx, asset.Size);
-                        continue;
-                    }
-                }
-                */
                 downInfos.Add(addDownInfo);
-                downInfoSizes.Add(asset.Size);
             }
             return downInfos.ToArray();
         }
