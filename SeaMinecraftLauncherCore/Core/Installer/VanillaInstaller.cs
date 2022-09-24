@@ -42,14 +42,12 @@ namespace SeaMinecraftLauncherCore.Core.Installer
                         File.Delete(Path.Combine(verPath, installName + ".jar"));
                     }
                     File.Move(Path.Combine(verPath, "client.jar"), Path.Combine(verPath, installName + ".jar"));
-                    result.Progress = InstallProgress.ProgressEnum.Completing_Libraries;
+                    result.Progress = InstallProgress.ProgressEnum.Completing_LibrariesAssetsNatives;
                     var libraries = CompleteLibraries(verInfo);
-                    libraries.Wait();
-                    result.Progress = InstallProgress.ProgressEnum.Completing_Assets;
                     var assets = CompleteAssets(verInfo);
-                    assets.Wait();
-                    result.Progress = InstallProgress.ProgressEnum.Completing_Natives;
                     var natives = CompleteNatives(verInfo);
+                    libraries.Wait();
+                    assets.Wait();
                     if (natives != null)
                     {
                         natives.Wait();
@@ -153,9 +151,7 @@ namespace SeaMinecraftLauncherCore.Core.Installer
         {
             Downloading_Json,
             Downloading_Client,
-            Completing_Libraries,
-            Completing_Assets,
-            Completing_Natives
+            Completing_LibrariesAssetsNatives,
         }
     }
 }
