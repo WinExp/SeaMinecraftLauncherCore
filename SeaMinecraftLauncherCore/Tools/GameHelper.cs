@@ -13,6 +13,7 @@ namespace SeaMinecraftLauncherCore.Tools
 {
     public static class GameHelper
     {
+        // 原版部分
         /// <summary>
         /// 获取服务器上的 Version_Manifest 信息。
         /// </summary>
@@ -271,8 +272,8 @@ namespace SeaMinecraftLauncherCore.Tools
         /// <summary>
         /// 获取缺失 Assets 信息。
         /// </summary>
-        /// <param name="versionInfo"></param>
-        /// <param name="validHash"></param>
+        /// <param name="versionInfo">版本信息。</param>
+        /// <param name="validHash">是否验证哈希。</param>
         /// <returns>缺失 Assets 信息。</returns>
         public static AssetsIndexInfo GetMissingAssets(VanillaVersionInfo versionInfo, bool validHash = false)
         {
@@ -361,6 +362,19 @@ namespace SeaMinecraftLauncherCore.Tools
                 downInfos.Add(addDownInfo);
             }
             return downInfos.ToArray();
+        }
+
+        // Fabric 部分
+        public static async Task<Core.Json.Fabric.Game> GetGameVersionsList()
+        {
+            string jsonStr = await WebRequests.GetStringAsync("https://meta.fabricmc.net/v2/versions/game");
+            var game = JsonConvert.DeserializeObject<Core.Json.Fabric.Game>(jsonStr);
+            return game;
+        }
+
+        public static async Task GetFabricJson(string mcversion, string loaderVersion)
+        {
+            string jsonStr = await WebRequests.GetStringAsync($"https://meta.fabricmc.net/v2/versions/loader/{mcversion}/{loaderVersion}/profile/json");
         }
     }
 }

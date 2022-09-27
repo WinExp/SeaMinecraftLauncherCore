@@ -87,7 +87,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Installer\FabricInstaller.cs" />
+    <Compile Include="Core\Installer\IModLoaderInstaller.cs" />
     <Compile Include="Core\Installer\VanillaInstaller.cs" />
+    <Compile Include="Core\Json\Fabric\Game.cs" />
     <Compile Include="Core\MCVersion.cs" />
     <Compile Include="Core\Mirrors\IMirror.cs" />
     <Compile Include="Core\Mirrors\OfficialMirror.cs" />

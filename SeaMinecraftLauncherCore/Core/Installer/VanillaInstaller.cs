@@ -17,8 +17,15 @@ namespace SeaMinecraftLauncherCore.Core.Installer
             _path = minecraftPath;
         }
         
-        public InstallProgress InstallVersion(Json.WebVersionInfo webVersion, string installName)
+        /// <summary>
+        /// 安装 Minecraft 原版。
+        /// </summary>
+        /// <param name="mcversion">需要安装的 Minecraft 版本。</param>
+        /// <param name="installName">安装名。</param>
+        /// <returns></returns>
+        public async Task<InstallProgress> InstallVersion(string mcversion, string installName)
         {
+            Json.WebVersionInfo webVersion = (await Tools.GameHelper.GetWebVersionInfo()).FindVersion(mcversion);
             InstallProgress result = new InstallProgress();
             Task.Run(async () =>
             {

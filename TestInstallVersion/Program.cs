@@ -19,21 +19,20 @@ namespace TestInstallVersion
             var minecraftList = await SeaMinecraftLauncherCore.Tools.GameHelper.GetWebVersionInfo();
             Console.Write("请输入需要安装的版本：");
             string installVersionStr = Console.ReadLine();
-            SeaMinecraftLauncherCore.Core.Json.WebVersionInfo installVersion = null;
+            Console.Write("请输入安装路径：");
+            string minecraftPath = Console.ReadLine();
+            var installer = new SeaMinecraftLauncherCore.Core.Installer.VanillaInstaller(minecraftPath);
+            DateTime startTime = DateTime.Now;
+            SeaMinecraftLauncherCore.Core.Installer.InstallProgress progress;
             try
             {
-                installVersion = minecraftList.FindVersion(installVersionStr);
+                progress = await installer.InstallVersion(installVersionStr, installVersionStr);
             }
             catch (NotImplementedException)
             {
                 Console.WriteLine("未找到版本");
                 return;
             }
-            Console.Write("请输入安装路径：");
-            string minecraftPath = Console.ReadLine();
-            var installer = new SeaMinecraftLauncherCore.Core.Installer.VanillaInstaller(minecraftPath);
-            DateTime startTime = DateTime.Now;
-            var progress = installer.InstallVersion(installVersion, installVersionStr);
             SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum? lastProgress = null;
             while (!progress.IsCompleted)
             {
