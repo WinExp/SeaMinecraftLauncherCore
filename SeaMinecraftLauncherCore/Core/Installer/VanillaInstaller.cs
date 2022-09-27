@@ -32,14 +32,14 @@ namespace SeaMinecraftLauncherCore.Core.Installer
                 try
                 {
                     string verPath = Path.Combine(_path, "versions", installName);
-                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(webVersion.Url, verPath)))
+                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(webVersion.Url.Replace("https://piston-meta.mojang.com", "https://download.mcbbs.net"), verPath)))
                     {
                         result.IsSuccess = false;
                         return;
                     }
                     Json.VanillaVersionInfo verInfo = Tools.GameHelper.GetVanillaVersionInfo(Path.Combine(verPath, installName + ".json"));
                     result.Progress = InstallProgress.ProgressEnum.Downloading_Client;
-                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(verInfo.Downloads.Client.URL.Replace("https://launchermeta.mojang.com", "https://download.mcbbs.net").Replace("https://launcher.mojang.com", "https://download.mcbbs.net"), verPath), 30000))
+                    if (!await DownloadCore.TryDownloadFileAsync(new DownloadCore.DownloadInfo(verInfo.Downloads.Client.URL.Replace("https://piston-meta.mojang.com", "https://download.mcbbs.net").Replace("https://launcher.mojang.com", "https://download.mcbbs.net"), verPath), 30000))
                     {
                         result.IsSuccess = false;
                         return;
@@ -49,14 +49,12 @@ namespace SeaMinecraftLauncherCore.Core.Installer
                         File.Delete(Path.Combine(verPath, installName + ".jar"));
                     }
                     File.Move(Path.Combine(verPath, "client.jar"), Path.Combine(verPath, installName + ".jar"));
-                    result.Progress = InstallProgress.ProgressEnum.Completing_Libraries;
+                    result.Progress = InstallProgress.ProgressEnum.Completing_LibrariesAssetsNatives;
                     var libraries = CompleteLibraries(verInfo);
-                    libraries.Wait();
-                    result.Progress = InstallProgress.ProgressEnum.Completing_Assets;
                     var assets = CompleteAssets(verInfo);
-                    assets.Wait();
-                    result.Progress = InstallProgress.ProgressEnum.Completing_Natives;
                     var natives = CompleteNatives(verInfo);
+                    libraries.Wait();
+                    assets.Wait();
                     if (natives != null)
                     {
                         natives.Wait();
@@ -160,9 +158,7 @@ namespace SeaMinecraftLauncherCore.Core.Installer
         {
             Downloading_Json,
             Downloading_Client,
-            Completing_Libraries,
-            Completing_Assets,
-            Completing_Natives
+            Completing_LibrariesAssetsNatives,
         }
     }
 }
