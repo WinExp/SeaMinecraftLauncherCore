@@ -114,7 +114,6 @@
     <Compile Include="Core\Form\Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="Online\Client.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\DownloadCore.cs" />
     <Compile Include="Tools\FileHelper.cs" />
