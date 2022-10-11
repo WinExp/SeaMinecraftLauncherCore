@@ -126,29 +126,42 @@ namespace SeaMinecraftLauncherCore.Core
             List<Task> asyncPool = new List<Task>();
             progress.TotalCount = downInfos.Count();
             progress.StartCount(asyncPool);
-            //int openedThreadCount = 0;
-            foreach (DownloadInfo downInfo in downInfos)
+            Task.Run(() =>
             {
-                asyncPool.Add(Task.Run(async () =>
+                foreach (DownloadInfo downInfo in downInfos)
                 {
-                    //while (openedThreadCount >= 256) ;
-                    //openedThreadCount++;
-                    for (int i = 0; i < (retryCount == int.MaxValue ? retryCount : retryCount + 1); i++)
+                    while (GetContinuingTask(asyncPool) >= 64) ;
+                    asyncPool.Add(Task.Run(async () =>
                     {
-                        if (await TryDownloadFileAsync(downInfo, timeout))
+                        for (int i = 0; i < (retryCount == int.MaxValue ? retryCount : retryCount + 1); i++)
                         {
-                            goto SkipThrowException;
+                            if (await TryDownloadFileAsync(downInfo, timeout))
+                            {
+                                goto SkipThrowException;
+                            }
                         }
-                    }
-                    throw new NotImplementedException();
-                SkipThrowException:
-                    return;
-                    //openedThreadCount--;
-                }));
-            }
+                        throw new NotImplementedException();
+                    SkipThrowException:
+                        return;
+                    }));
+                }
+            });
 
             //await Task.WhenAll(asyncPool);
             return progress;
+        }
+
+        private static int GetContinuingTask(IEnumerable<Task> asyncPool)
+        {
+            int count = 0;
+            foreach (Task task in asyncPool)
+            {
+                if (!task.IsCompleted)
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         public static async Task<bool> TryDownloadFileAsync(DownloadInfo downInfo, int timeout = 20000)

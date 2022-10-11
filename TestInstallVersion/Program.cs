@@ -47,8 +47,14 @@ namespace TestInstallVersion
                         case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Downloading_Client:
                             Console.WriteLine($"安装进度：正在下载版本核心");
                             break;
-                        case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_LibrariesAssetsNatives:
-                            Console.WriteLine("安装进度：正在补全 Libraries, Assets, Natives");
+                        case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_Libraries:
+                            Console.WriteLine("安装进度：正在补全 Libraries");
+                            break;
+                        case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_Assets:
+                            Console.WriteLine("安装进度：正在补全 Assets");
+                            break;
+                        case SeaMinecraftLauncherCore.Core.Installer.InstallProgress.ProgressEnum.Completing_Natives:
+                            Console.WriteLine("安装进度：正在补全 Natives");
                             break;
 
                     }
